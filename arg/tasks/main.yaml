@@ -1,0 +1,38 @@
+---
+# All thanks to @KTSS
+# tasks file for user
+- name: Create default directory structure
+  ansible.builtin.file:
+    path: "/home/{{ ansible_user_id }}/{{ item }}"
+    state: directory
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_id }}"
+    mode: '700'
+  loop:
+    - .cache/nvim/undodir
+    - .local/
+    - code
+
+- name: Copy dotfiles
+  ansible.builtin.copy:
+    src: "home/user/{{ item['src'] }}"
+    dest: "/home/{{ item['dest'] }}"
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_id }}"
+    mode: '600'
+    directory_mode: '700'
+  loop:
+    - {src: config/bash, dest: "{{ ansible_user_id }}/.config"}
+    - {src: config/fontconfig, dest: "{{ ansible_user_id }}/.config"}
+    - {src: config/git, dest: "{{ ansible_user_id }}/.config"}
+    - {src: config/npm, dest: "{{ ansible_user_id }}/.config"}
+    - {src: config/nvim, dest: "{{ ansible_user_id }}/.config"}
+
+- name: Copy scripts
+  ansible.builtin.copy:
+    src: home/user/local/bin
+    dest: "/home/{{ ansible_user_id }}/.local"
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_id }}"
+    mode: '700'
+    directory_mode: '700'
