@@ -1,0 +1,32 @@
+layout {
+  default_tab_template {
+    // the default zellij tab-bar and status bar plugins
+    pane size=1 borderless=true {
+        plugin location="zellij:tab-bar"
+    }
+    children
+    pane size=2 borderless=true {
+      plugin location="zellij:status-bar"
+    }
+  }
+
+  tab name="Main" focus=true {
+    pane split_direction="vertical" {
+      name "Main"
+      cwd "~"
+      focus true
+    }
+    pane split_direction="vertical" {
+      name "Code"
+      cwd "~/code/"
+    }
+  }
+
+  tab name="Notes" {
+    pane {
+      name "Notes"
+      cwd "~/neorg/personal/"
+      edit "index.norg"
+    }
+  }
+}
