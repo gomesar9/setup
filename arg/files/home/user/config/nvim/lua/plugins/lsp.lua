@@ -9,11 +9,6 @@ return {
 			vim.g.lsp_zero_extend_lspconfig = 0
 		end,
 	},
-	{
-		"williamboman/mason.nvim",
-		lazy = false,
-		config = true,
-	},
 
 	-- LSP
 	{
