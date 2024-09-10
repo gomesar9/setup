@@ -16,7 +16,7 @@ vim.api.nvim_create_augroup(group, { clear = true }) -- Create a group for sh
 -- end
 
 autocmd("Filetype", {
-	pattern = "",
+	pattern = "norg",
 	group = group,
 	command = "set conceallevel=2",
 })
