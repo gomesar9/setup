@@ -9,23 +9,30 @@ return {
 			"hrsh7th/cmp-buffer",
 			"hrsh7th/cmp-path",
 			"saadparwaiz1/cmp_luasnip",
+			"L3MON4D3/LuaSnip",
 		},
 		opts = function()
 			vim.api.nvim_set_hl(0, "CmpGhostText", { link = "Comment", default = true })
+
+			local luasnip = require("luasnip")
 			local cmp = require("cmp")
 			local defaults = require("cmp.config.default")()
 			local lsp_zero = require("lsp-zero")
 			local cmp_action = lsp_zero.cmp_action()
+
 			lsp_zero.extend_cmp()
+
 			return {
 				completion = {
 					completeopt = "menu,menuone,noinsert",
 				},
+
 				snippet = {
 					expand = function(args)
-						require("luasnip").lsp_expand(args.body)
+						luasnip.lsp_expand(args.body)
 					end,
 				},
+
 				mapping = cmp.mapping.preset.insert({
 					-- ctrl + n and +p already works and is builtin
 					--["<C-n>"] = cmp.mapping.select_next_item({ behavior = cmp.SelectBehavior.Insert }),
@@ -55,15 +62,12 @@ return {
 							luasnip.expand()
 						elseif luasnip.expand_or_jumpable() then
 							luasnip.expand_or_jump()
-						elseif check_backspace() then
-							fallback()
+							-- elseif check_backspace() then
+							-- 	fallback()
 						else
 							fallback()
 						end
-					end, {
-						"i",
-						"s",
-					}),
+					end, { "i", "s" }),
 					["<S-Tab>"] = cmp.mapping(function(fallback)
 						if cmp.visible() then
 							cmp.select_prev_item()
@@ -77,7 +81,9 @@ return {
 						"s",
 					}),
 				}),
+
 				formatting = lsp_zero.cmp_format(),
+
 				sources = cmp.config.sources({
 					{ name = "nvim_lsp" },
 					{ name = "luasnip" },
@@ -85,15 +91,18 @@ return {
 					{ name = "buffer" },
 					{ name = "neorg" },
 				}),
+
 				experimental = {
 					ghost_text = {
 						hl_group = "CmpGhostText",
 					},
 				},
+
 				sorting = defaults.sorting,
 			}
 		end,
-		---@param opts cmp.ConfigSchema
+
+		-- @param opts cmp.ConfigSchema
 		config = function(_, opts)
 			for _, source in ipairs(opts.sources) do
 				source.group_index = source.group_index or 1
