@@ -1,4 +1,4 @@
--- *.sh
+-- *.norg
 local group = "neorg"
 local autocmd = vim.api.nvim_create_autocmd -- Create automcd
 
@@ -6,6 +6,7 @@ vim.api.nvim_create_augroup(group, { clear = true }) -- Create a group for sh
 
 local function neorgcmd(mode, lhs, rh, opts)
 	local _opts = { silent = true }
+	-- concatena tabelas priorizando o parâmetro
 	for k, v in pairs(opts) do
 		_opts[k] = v
 	end

@@ -1,4 +1,4 @@
--- *.sh
+-- *.{sh,py}
 local group = "shebang"
 vim.api.nvim_create_augroup(group, { clear = true }) -- Create a group for sh
 

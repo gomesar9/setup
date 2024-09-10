@@ -1,5 +1,6 @@
 require("autocommands.shebang")
 require("autocommands.neorg")
+require("autocommands.lua")
 
 require("utils.keymap")
 require("config.options")
