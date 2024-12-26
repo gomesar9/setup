@@ -1,3 +1,6 @@
+# Volume for test container
+v_home/**
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
