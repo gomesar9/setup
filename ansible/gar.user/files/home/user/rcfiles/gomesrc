@@ -1,0 +1,65 @@
+alias çl='clear; ls -lhF'
+alias çla='clear; ls -lhaF'
+alias çgit='cd /git'
+alias çt='tree -L 2'
+alias çtmp='cd /home/gomes/code/tmp/'
+alias k='kubectl'
+alias kst='kubectl kustomize'
+alias v=vim
+
+# personal info: emails, numbers, perfis, etc
+alias çcrono='see ~/.personal_crono.png'
+alias çnotes='vim ~/notes/gomes/'
+alias çnvim='cd ~/.config/nvim/ && vim . && cd -'
+alias me='yq ~/.me.yaml | less'
+alias mepriv='gpg -d ~/.mepriv.yaml.gpg 2>-'
+alias gs='git status'
+alias gfa='git fetch --all'
+alias gc='git commit'
+alias gps='git push'
+alias gpl='git pull'
+
+# Via Varejo
+#alias çvia='ssh -L 5555:10.128.13.238:22 root@vv.jumpbox -f -N && ssh -i ~/.ssh/ssys/id_rsa -p 5555 -D 5005 root@localhost'
+
+# SSYS KEY
+#alias çssyskey='ssh-add /home/gomes/.ssh/ssys/id_rsa'
+
+# SSYS VPN
+#alias çvpn="sudo openvpn /etc/vpn/ssys/ssys.ovpn"
+
+# Editor
+export EDITOR=vim
+
+# Zellij
+alias çzsagres="zellij --layout sagres"
+
+# scripts and functions
+export PATH="$PATH:/home/gomes/.cargo/bin:/usr/local/go/bin"
+#source /opt/gomesar/functions/tools.sh
+
+export WORKON_HOME=$HOME/.virtualenvs
+export PROJECT_HOME=$HOME/Devel
+export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3
+#export VIRTUALENVWRAPPER_VIRTUALENV=/home/gomes/.local/bin/virtualenv
+source $HOME/.local/bin/virtualenvwrapper.sh
+
+
+export PATH=$PATH:/usr/share/logstash/bin
+export PATH="$PATH:/opt/flutter/bin"
+export PATH="$PATH:/home/gomes/.local/bin"
+export PATH="$PATH:/opt/go/bin"
+export PATH="$PATH:$(go env GOPATH)/bin"
+
+
+alias albion='/opt/albion/Albion-Online'
+export PYENV_ROOT="$HOME/.pyenv"
+eval "$(pyenv init -)"
+eval "$(pyenv virtualenv-init -)"
+
+alias t='tree -L 3'
+
+
+alias zgomes='zellij a gomes 2>/dev/null || zellij --layout gomes --session gomes'
+
+alias f=fzf

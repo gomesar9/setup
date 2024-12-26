@@ -1,0 +1,13 @@
+services:
+  cfg-test:
+    build: .
+    ports:
+      - "9022:22"
+    # develop:
+    #   watch:
+    #     - path: .
+    #       action: sync
+    volumes:
+      - ./v_home:/home/userx/
+      - ./ansible/:/opt/ansible
+    tty: true
