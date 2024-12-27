@@ -75,17 +75,19 @@
         - { src: "nvim/", dest: "/usr/local/share/nvim/" }
       become: true
 
-    - name: Create symbolic link for vim
-      ansible.builtin.file:
-        src: /usr/local/bin/nvim
-        dest: /usr/bin/vim
-        state: link
-        force: true
-      become: true
-
   always:
     - name: Ensure temporary directory removal
       ansible.builtin.file:
         path: "{{ tmp_dir.path }}"
         state: absent
       when: tmp_dir is defined
+
+- name: Ensure [Neovim] symlinks
+  block:
+    - name: Ensure symbolic link for [Neovim]
+      ansible.builtin.file:
+        src: /usr/local/bin/nvim
+        dest: /usr/bin/vim
+        state: link
+        force: true
+      become: true

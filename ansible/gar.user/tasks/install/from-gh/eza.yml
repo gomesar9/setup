@@ -56,10 +56,14 @@
       changed_when: false
       become: true
 
-    - name: Create symbolic link for [Eza]
+
+- name: Ensure [Eza] symlinks
+  block:
+    - name: Ensure symbolic link for [Eza]
       ansible.builtin.file:
         src: /usr/local/bin/eza
         dest: /usr/bin/ls
         state: link
         force: true
       become: true
+
