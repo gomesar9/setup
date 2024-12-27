@@ -49,7 +49,7 @@
     gh_tool_name: Neovim
     gh_tool_repo: https://github.com/neovim/neovim
     gh_tool_version_command: nvim --version | grep -oP 'NVIM \K(v\d+\.\d+\.\d+)'
-    gh_tool_final_path: /usr/local/bin/nvim
+    gh_tool_final_path: /opt/nvim/bin/nvim
     gh_tool_download_file_name: nvim-linux64.tar.gz
     gh_tool_extracted_rel_file_path: nvim-linux64/bin/nvim
     gh_tool_symlink_path: /usr/bin/vim
@@ -59,7 +59,7 @@
       - { src: "nvim-linux64/share/locale/", dest: "/usr/share/locale/" }
       - { src: "nvim-linux64/share/man/", dest: "/usr/share/man/" }
       - { src: "nvim-linux64/share/nvim/", dest: "/usr/local/share/nvim/" }
-
+      - { src: "nvim-linux64/lib/nvim/", dest: "/usr/local/lib/" }
 
 # Instalação de outras ferramentas via Github
 - name: Include Eza install

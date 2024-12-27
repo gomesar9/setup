@@ -2,7 +2,7 @@
   block:
     - name: "Check if installed [{{ gh_tool_name }}]"
       ansible.builtin.stat:
-        path: /usr/local/bin/eza
+        path: "{{ gh_tool_final_path }}"
       register: ght_stat
 
     - name: "Get version [{{ gh_tool_name }}]"
@@ -75,7 +75,7 @@
       ansible.builtin.copy:
         src: "{{ tmp_dir.path }}/{{ item.src }}"
         dest: "{{ item.dest }}"
-        mode: "{{ item.mode | default('0644') }}" # Valor padrão para mode
+        mode: "{{ item.mode | default('0755') }}" # Valor padrão para mode
         remote_src: true
       loop: "{{ support_files }}"
       loop_control:
