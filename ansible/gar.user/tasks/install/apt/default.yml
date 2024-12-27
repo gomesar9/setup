@@ -10,7 +10,7 @@
           # - duf                     # Exibição moderna do uso de disco
           # - eza                     # Alternativa moderna ao ls. Para manter atualizado foi alterado para ./from-gh
           - fd-find                 # Localizador rápido (similar ao `find`)
-          - fzf                     # Pesquisa fuzzy para terminal
+          # - fzf                     # Pesquisa fuzzy para terminal # Muito desatualizado, alterado para ./from-gh
           - git                     # Controle de versão
           - gnupg                   # GPG para segurança
           - htop                    # Monitoramento do sistema

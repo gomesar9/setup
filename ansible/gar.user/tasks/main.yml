@@ -25,6 +25,7 @@
     - {src: config/git, dest: "{{ ansible_user_id }}/.config"}
     - {src: config/npm, dest: "{{ ansible_user_id }}/.config"}
     - {src: config/nvim, dest: "{{ ansible_user_id }}/.config"}
+    - {src: config/eza, dest: "{{ ansible_user_id }}/.config"}
     - {src: rcfiles/gomesrc, dest: "{{ ansible_user_id }}/.gomesrc"}
     - {src: rcfiles/zshrc, dest: "{{ ansible_user_id }}/.zshrc"}
 
@@ -43,8 +44,44 @@
 
 # Instalação do essencial: Neovim
 - name: Include Neovim install
-  include_tasks: install/from-gh/neovim.yml
+  include_tasks: install/from-gh/install_release.yml
+  vars:
+    gh_tool_name: Neovim
+    gh_tool_repo: https://github.com/neovim/neovim
+    gh_tool_version_command: nvim --version | grep -oP 'NVIM \K(v\d+\.\d+\.\d+)'
+    gh_tool_final_path: /usr/local/bin/nvim
+    gh_tool_download_file_name: nvim-linux64.tar.gz
+    gh_tool_extracted_rel_file_path: nvim-linux64/bin/nvim
+    gh_tool_symlink_path: /usr/bin/vim
+    support_files:
+      - { src: "nvim-linux64/share/applications/", dest: "/usr/share/applications/" }
+      - { src: "nvim-linux64/share/icons/", dest: "/usr/share/icons/" }
+      - { src: "nvim-linux64/share/locale/", dest: "/usr/share/locale/" }
+      - { src: "nvim-linux64/share/man/", dest: "/usr/share/man/" }
+      - { src: "nvim-linux64/share/nvim/", dest: "/usr/local/share/nvim/" }
+
 
 # Instalação de outras ferramentas via Github
 - name: Include Eza install
-  include_tasks: install/from-gh/eza.yml
+  include_tasks: install/from-gh/install_release.yml
+  vars:
+    gh_tool_name: Eza
+    gh_tool_repo: https://github.com/eza-community/eza
+    gh_tool_version_command: eza --version | grep -oP '^v\d+\.\d+\.\d+'
+    gh_tool_final_path: /usr/local/bin/eza
+    gh_tool_download_file_name: eza_x86_64-unknown-linux-gnu.tar.gz
+    gh_tool_extracted_rel_file_path: eza
+    gh_tool_symlink_path: /usr/bin/ls
+
+- name: Config Eza
+  include_tasks: config/eza.yml
+
+- name: Install Neovim
+  include_tasks: install/from-gh/install_release.yml
+  vars:
+    gh_tool_name: Fuzzy Finder
+    gh_tool_repo: https://github.com/junegunn/fzf
+    gh_tool_version_command: echo -n "v$(fzf --version | grep -oP '^\d+\.\d+\.\d+')"
+    gh_tool_final_path: /usr/local/bin/fzf
+    gh_tool_download_file_name: fzf-0.57.0-linux_amd64.tar.gz
+    gh_tool_extracted_rel_file_path: fzf

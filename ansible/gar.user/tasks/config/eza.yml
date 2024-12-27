@@ -1,0 +1,8 @@
+- name: Ensure [Eza] configs
+  block:
+    - name: Ensure theme
+      ansible.builtin.file:
+        src: "{{ ansible_env.HOME }}/.config/eza/themes/gruvbox-dark.yml"
+        dest: "{{ ansible_env.HOME }}/.config/eza/theme.yml"
+        state: link
+        force: true
