@@ -37,6 +37,14 @@
     mode: '700'
     directory_mode: '700'
 
-# Instalação de ferramentas padrões
+# Instalação do essencial: Neovim
 - name: Include Neovim install
   include_tasks: install/from-gh/neovim.yml
+
+# Instalação de ferramentas padrão
+- name: Include basic system tools
+  include_tasks: install/apt/default.yml
+
+# Instalação de outras ferramentas via Github
+- name: Include Eza install
+  include_tasks: install/from-gh/eza.yml

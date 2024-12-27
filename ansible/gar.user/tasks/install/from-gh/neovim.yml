@@ -1,12 +1,17 @@
-- name: Check installed and latest versions
+- name: Check [Neovim] installed and latest versions
   block:
-    - name: Get nvim --version
+    - name: Check if [Neovim] is installed
+      ansible.builtin.stat:
+        path: /usr/local/bin/nvim
+      register: nvim_stat
+
+    - name: Get [Neovim] --version
       ansible.builtin.shell: set -o pipefail && nvim --version | grep -oP 'NVIM \K(v\d+\.\d+\.\d+)'
       args:
         executable: /bin/bash
       changed_when: false
       register: nvim_installed_version
-      ignore_errors: true
+      when: nvim_stat.stat.exists
 
     - name: Check latest if any installed
       ansible.builtin.shell: set -o pipefail && curl -s -D- https://github.com/neovim/neovim/releases/latest | grep -oP 'location:.*/tag/\K(v\d+\.\d+\.\d+)'
@@ -14,7 +19,7 @@
         executable: /bin/bash
       register: nvim_latest_version
       changed_when: false
-      when: nvim_installed_version.rc == 0
+      when: nvim_stat is not skipped and nvim_installed_version.rc == 0
 
     - name: Compare version
       ansible.builtin.debug:

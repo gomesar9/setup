@@ -1,0 +1,10 @@
+# Based on https://bitbucket.org/KTSS/ansible-user/src/main/
+# Very thanks
+---
+# Configure user dotfiles
+- name: Configure user settings
+  hosts: localhost
+  connection: local
+  roles:
+    - gar.user
+...
