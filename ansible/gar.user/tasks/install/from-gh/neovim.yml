@@ -19,7 +19,7 @@
         executable: /bin/bash
       register: nvim_latest_version
       changed_when: false
-      when: nvim_stat is not skipped and nvim_installed_version.rc == 0
+      when: nvim_installed_version is not skipped and nvim_installed_version.rc == 0
 
     - name: Compare version
       ansible.builtin.debug:

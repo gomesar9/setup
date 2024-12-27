@@ -1,9 +1,8 @@
 FROM debian:11
 
 # Atualiza o sistema e instala pacotes básicos
-RUN apt-get update && apt-get install -y \
-    sudo \
-    && rm -rf /var/lib/apt/lists/*
+COPY init.sh .
+RUN ./init.sh
 
 # Cria o usuário 'userx' e o adiciona ao grupo sudo
 RUN useradd -m -s /bin/bash userx \
