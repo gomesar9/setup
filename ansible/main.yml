@@ -1,7 +1,7 @@
 # Based on https://bitbucket.org/KTSS/ansible-user/src/main/
 # Very thanks
 ---
-# Configure user dotfiles
+# Configure user machine
 - name: Configure user settings
   hosts: localhost
   connection: local

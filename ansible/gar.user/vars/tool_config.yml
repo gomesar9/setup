@@ -1,0 +1,3 @@
+tool_cfg:
+  eza:
+    theme: "gruvbox-dark"
