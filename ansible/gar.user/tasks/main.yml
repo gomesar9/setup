@@ -36,3 +36,7 @@
     group: "{{ ansible_user_id }}"
     mode: '700'
     directory_mode: '700'
+
+# Instalação de ferramentas padrões
+- name: Include Neovim install
+  include_tasks: install/from-gh/neovim.yml

@@ -1,0 +1,86 @@
+- name: Check installed and latest versions
+  block:
+    - name: Get nvim --version
+      ansible.builtin.shell: set -o pipefail && nvim --version | grep -oP 'NVIM \K(v\d+\.\d+\.\d+)'
+      args:
+        executable: /bin/bash
+      changed_when: false
+      register: nvim_installed_version
+      ignore_errors: true
+
+    - name: Check latest if any installed
+      ansible.builtin.shell: set -o pipefail && curl -s -D- https://github.com/neovim/neovim/releases/latest | grep -oP 'location:.*/tag/\K(v\d+\.\d+\.\d+)'
+      args:
+        executable: /bin/bash
+      register: nvim_latest_version
+      changed_when: false
+      when: nvim_installed_version.rc == 0
+
+    - name: Compare version
+      ansible.builtin.debug:
+        msg: "Neovim present and up to date (Version {{ nvim_latest_version.stdout }})."
+      when: nvim_latest_version is not skipped and nvim_installed_version.stdout == nvim_latest_version.stdout
+
+- name: Check for neovim updates
+  when: not(nvim_latest_version is not skipped and nvim_installed_version.stdout == nvim_latest_version.stdout)
+  block:
+    - name: Create temporary directory
+      ansible.builtin.file:
+        path: /tmp/ansible-nvim-install
+        state: directory
+        mode: "0755"
+      register: tmp_dir
+
+    - name: Download Neovim archive
+      ansible.builtin.get_url:
+        url: https://github.com/neovim/neovim/releases/latest/download/nvim-linux64.tar.gz
+        dest: "{{ tmp_dir.path }}/nvim-linux64.tar.gz"
+        validate_certs: false  # TODO: Checar certs
+        mode: "0755"
+
+    - name: Extract Neovim archive
+      ansible.builtin.unarchive:
+        src: "{{ tmp_dir.path }}/nvim-linux64.tar.gz"
+        dest: "{{ tmp_dir.path }}"
+        remote_src: true
+
+    - name: Install nvim executable
+      ansible.builtin.command: "install -Dm 0755 {{ tmp_dir.path }}/nvim-linux64/bin/nvim /usr/local/bin/nvim"
+      changed_when: false
+      become: true
+
+    - name: Ensure nvim support dir
+      ansible.builtin.file:
+        path: /usr/local/share/nvim
+        state: directory
+        mode: "0755"
+      become: true
+
+    - name: Copy Neovim shared files
+      ansible.builtin.copy:
+        src: "{{ tmp_dir.path }}/nvim-linux64/share/{{ item.src }}"
+        dest: "{{ item.dest }}"
+        mode: "0755"
+        remote_src: true
+      with_items:
+        - { src: "applications/", dest: "/usr/share/applications/" }
+        - { src: "icons/", dest: "/usr/share/icons/" }
+        - { src: "locale/", dest: "/usr/share/locale/" }
+        - { src: "man/", dest: "/usr/share/man/" }
+        - { src: "nvim/", dest: "/usr/local/share/nvim/" }
+      become: true
+
+    - name: Create symbolic link for vim
+      ansible.builtin.file:
+        src: /usr/local/bin/nvim
+        dest: /usr/bin/vim
+        state: link
+        force: true
+      become: true
+
+  always:
+    - name: Ensure temporary directory removal
+      ansible.builtin.file:
+        path: "{{ tmp_dir.path }}"
+        state: absent
+      when: tmp_dir is defined
