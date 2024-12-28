@@ -26,8 +26,8 @@
     - {src: config/npm, dest: "{{ ansible_user_id }}/.config"}
     - {src: config/nvim, dest: "{{ ansible_user_id }}/.config"}
     - {src: config/eza, dest: "{{ ansible_user_id }}/.config"}
-    - {src: rcfiles/gomesrc, dest: "{{ ansible_user_id }}/.gomesrc"}
-    - {src: rcfiles/zshrc, dest: "{{ ansible_user_id }}/.zshrc"}
+    - {src: rcfiles/gomesrc.sh, dest: "{{ ansible_user_id }}/.gomesrc"}
+    - {src: rcfiles/zshrc.sh, dest: "{{ ansible_user_id }}/.zshrc"}
 
 - name: Copy scripts
   ansible.builtin.copy:

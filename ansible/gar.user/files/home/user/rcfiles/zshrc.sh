@@ -3,8 +3,8 @@
 
 # Path to your oh-my-zsh installation.
 #source <(kind completion zsh)
-export ZSH="/home/gomes/.oh-my-zsh"
-source /home/gomes/.gomesrc
+export ZSH="${HOME}/.oh-my-zsh"
+source "${HOME}/.gomesrc"
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
@@ -75,8 +75,7 @@ ZSH_THEME="avit"
 
 #plugins=(git virtualenvwrapper oc)
 
-source $ZSH/oh-my-zsh.sh
-#source /home/gomes/.velero_completion
+source "$ZSH/oh-my-zsh.sh"
 
 # User configuration
 
@@ -105,8 +104,8 @@ source $ZSH/oh-my-zsh.sh
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
 export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
 
 # The next line updates PATH for the Google Cloud SDK.
 if [ -f '/opt/google-cloud-sdk/path.zsh.inc' ]; then . '/opt/google-cloud-sdk/path.zsh.inc'; fi
@@ -118,7 +117,7 @@ if [ -f '/opt/google-cloud-sdk/completion.zsh.inc' ]; then . '/opt/google-cloud-
 export PATH=$PATH:$HOME/.pulumi/bin
 
 # bun completions
-[ -s "/home/gomes/.bun/_bun" ] && source "/home/gomes/.bun/_bun"
+[ -s "${HOME}/.bun/_bun" ] && source "${HOME}/.bun/_bun"
 
 # bun
 export BUN_INSTALL="$HOME/.bun"
@@ -128,13 +127,12 @@ export PATH="$BUN_INSTALL/bin:$PATH"
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
 
-
 # Kubectl
 source "$HOME/.config/zsh-autocomplete/kubectl/completion-zsh.sh"
 
 # FZF
-if [[ ! "$PATH" == */home/gomes/.local/tools-from-git/fzf/bin* ]]; then
-  PATH="${PATH:+${PATH}:}/home/gomes/.local/tools-from-git/fzf/bin"
+if [[ ! "$PATH" == *${HOME}/.local/tools-from-git/fzf/bin* ]]; then
+    PATH="${PATH:+${PATH}:}${HOME}/.local/tools-from-git/fzf/bin"
 fi
 source "$HOME/.config/zsh-autocomplete/fzf/completion-zsh.sh"
 
