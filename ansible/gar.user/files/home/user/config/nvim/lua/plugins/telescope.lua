@@ -6,10 +6,11 @@ return {
 		require("telescope").setup()
 
 		-- Set keymaps using custom function Keymap
-		Keymap("n", "<leader>ff", "<cmd>Telescope find_files<cr>", { desc = "Fuzzy find files in cwd" })
-		Keymap("n", "<leader>fg", "<cmd>Telescope live_grep<cr>", { desc = "Fuzzy find recent files" })
-		Keymap("n", "<leader>fb", "<cmd>Telescope buffers<cr>", { desc = "Find string in cwd" })
-		Keymap("n", "<leader>fs", "<cmd>Telescope git_status<cr>", { desc = "Find string under cursor in cwd" })
-		Keymap("n", "<leader>fc", "<cmd>Telescope git commits<cr>", { desc = "Find todos" })
+		local builtin = require("telescope.builtin")
+		Keymap("n", "<leader>ff", builtin.find_files, { desc = "Fuzzy [f]ind files in cwd" })
+		Keymap("n", "<leader>fg", builtin.live_grep, { desc = "Fuzzy [g]rep live in cwd" })
+		Keymap("n", "<leader>fs", builtin.grep_string, { desc = "Find [s]tring under cursor in cwd" })
+		Keymap("n", "<leader>fb", builtin.builtin, { desc = "Find [b]uiltins" })
+		Keymap("n", "<leader>fw", builtin.lsp_workspace_symbols, { desc = "Find [w]orkspace symbols" })
 	end,
 }

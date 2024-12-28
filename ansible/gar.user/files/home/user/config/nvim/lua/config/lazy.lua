@@ -45,3 +45,6 @@ require("lazy").setup({
 	-- automatically check for plugin updates
 	checker = { enabled = true },
 })
+
+-- Após o carregamento do plugin tokyonight (colorscheme.lua)
+vim.cmd("colorscheme tokyonight")
