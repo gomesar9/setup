@@ -23,6 +23,7 @@ return {
 				"c",
 				"css",
 				"dockerfile",
+				"gitcommit",
 				"gitignore",
 				"html",
 				"java",
