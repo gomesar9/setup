@@ -5,7 +5,7 @@ if command -v eza >/dev/null 2>&1; then
     # Eza adiciona headers, por isso não faz sentido aqui
     alias çl='clear; ls -lF'
     alias çla='clear; ls -laF'
-    alias t='ls -L 3' # Usa o próprio eza para árvore de diretório
+    alias t='ls -T -L 3' # Usa o próprio eza para árvore de diretório
 else
     alias çl='clear; ls -lhF'
     alias çla='clear; ls -lhaF'
