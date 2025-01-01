@@ -13,7 +13,7 @@
       register: ght_installed_version
       when: ght_stat.stat.exists
 
-    - name: "Definir valor padrão para gh_tool_url_version_command [{{ gh_tool_name }}]"
+    - name: "Set gh_tool_url_version_command [{{ gh_tool_name }}]"
       ansible.builtin.set_fact:
         gh_tool_url_version_command: "grep -oP 'location:.*/tag/\\K(v?\\d+\\.\\d+\\.\\d+)'"
       when: gh_tool_url_version_command is not defined
@@ -27,9 +27,10 @@
       register: ght_latest_version
       changed_when: false
 
-    - name: "Latest verion [{{ gh_tool_name }}]"
+    - name: "Display versions [{{ gh_tool_name }}]"
       ansible.builtin.debug:
-        msg: "Latest version found: {{ ght_latest_version.stdout }}"
+        msg: "Latest version found: {{ ght_latest_version.stdout }}. Local version found: {{ ght_installed_version.stdout | default('None') }}"
+      when: not(ght_installed_version is not skipped and ght_installed_version.stdout == ght_latest_version.stdout)
 
     - name: "Compare versions [{{ gh_tool_name }}]"
       ansible.builtin.debug:
