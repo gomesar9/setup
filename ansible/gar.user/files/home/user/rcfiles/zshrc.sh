@@ -75,7 +75,9 @@ ZSH_THEME="avit"
 
 #plugins=(git virtualenvwrapper oc)
 
-source "$ZSH/oh-my-zsh.sh"
+if [ -f "${ZSH}/oh-my-zsh.sh" ]; then
+    source "${ZSH}/oh-my-zsh.sh"
+fi
 
 # User configuration
 
@@ -128,13 +130,18 @@ export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
 
 # Kubectl
-source "$HOME/.config/zsh-autocomplete/kubectl/completion-zsh.sh"
+if [ -f "${HOME}/.config/zsh/autocomplete/kubectl.sh" ]; then
+    source "${HOME}/.config/zsh-autocomplete/kubectl/completion-zsh.sh"
+fi
 
 # FZF
 if [[ ! "$PATH" == *${HOME}/.local/tools-from-git/fzf/bin* ]]; then
     PATH="${PATH:+${PATH}:}${HOME}/.local/tools-from-git/fzf/bin"
 fi
-source "$HOME/.config/zsh-autocomplete/fzf/completion-zsh.sh"
+
+if [ -f "${HOME}/.config/zsh/autocomplete/fzf.sh" ]; then
+    source "${HOME}/.config/zsh/autocomplete/fzf.sh"
+fi
 
 export FZF_DEFAULT_COMMAND='fd --type f --color=never --hidden'
 export FZF_DEFAULT_OPTS='--no-height'

@@ -9,7 +9,7 @@
           - curl                    # Transferência de dados
           # - duf                     # Exibição moderna do uso de disco
           # - eza                     # Alternativa moderna ao ls. Para manter atualizado foi alterado para ./from-gh
-          - fd-find                 # Localizador rápido (similar ao `find`)
+          # - fd-find                 # Localizador rápido (similar ao `find`).Alterado para /from-gh
           # - fzf                     # Pesquisa fuzzy para terminal # Muito desatualizado, alterado para ./from-gh
           - git                     # Controle de versão
           - gnupg                   # GPG para segurança

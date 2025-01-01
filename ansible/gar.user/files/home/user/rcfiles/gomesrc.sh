@@ -42,7 +42,7 @@ alias gc='git commit'
 alias gps='git push'
 alias gpl='git pull'
 
-if command -v zellij >dev/null 2>&1; then
+if command -v zellij >/dev/null 2>&1; then
     alias zgomes='zellij a gomes 2>/dev/null || zellij --layout gomes --session gomes'
 fi
 
@@ -60,9 +60,16 @@ export PATH="${PATH}:/usr/share/logstash/bin"
 export PATH="${PATH}:/opt/flutter/bin"
 export PATH="${PATH}:/home/gomes/.local/bin"
 export PATH="${PATH}:/opt/go/bin"
-export PATH="${PATH}:$(go env GOPATH)/bin"
 
-# Pyenv
-export PYENV_ROOT="$HOME/.pyenv"
-eval "$(pyenv init -)"
-eval "$(pyenv virtualenv-init -)"
+# Go
+if command -v go >/dev/null 2>&1; then
+    gopath="$(go env GOPATH)/bin"
+    export PATH="${PATH}:${gopath}"
+fi
+
+# Python
+if command -v pyenv >/dev/null 2>&1; then
+    export PYENV_ROOT="$HOME/.pyenv"
+    eval "$(pyenv init -)"
+    eval "$(pyenv virtualenv-init -)"
+fi

@@ -87,3 +87,22 @@
     gh_tool_final_path: /usr/local/bin/fzf
     gh_tool_download_file_name: fzf-0.57.0-linux_amd64.tar.gz
     gh_tool_extracted_rel_file_path: fzf
+
+- name: Config FZF
+  include_tasks: config/fzf.yml
+
+  # FdFind
+# https://github.com/sharkdp/fd/releases/download/v10.2.0/fd-v10.2.0-x86_64-unknown-linux-gnu.tar.gz
+
+
+- name: Install FdFind
+  include_tasks: install/from-gh/install_release.yml
+  vars:
+    gh_tool_name: FdFind
+    gh_tool_repo: https://github.com/sharkdp/fd
+    gh_tool_version_command: echo -n "v$(fd --version | grep -oP '^\d+\.\d+\.\d+')"
+    gh_tool_final_path: /usr/local/bin/fd
+    gh_tool_download_file_name: fd-${VERSION}-x86_64-unknown-linux-gnu.tar.gz
+    gh_tool_extracted_rel_file_path: fd
+    gh_tool_unarchive_options:
+      - "--strip-components=1"

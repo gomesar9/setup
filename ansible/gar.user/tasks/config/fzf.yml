@@ -1,0 +1,11 @@
+- name: "Config FZF"
+  block:
+    - name: "Ensure support dirs [{{ gh_tool_name }}]"
+      ansible.builtin.file:
+        path: "{{ ansible_env.HOME }}/.config/zsh/autocomplete"
+        state: directory
+        mode: "0755"
+
+    - name: "Create autocomplete for ZSH"
+      ansible.builtin.shell: "set -o pipefail | fzf --zsh | sed \"s/\\\\^T/^F/\" > {{ ansible_env.HOME }}/.config/zsh/autocomplete/fzf.sh"
+      changed_when: false

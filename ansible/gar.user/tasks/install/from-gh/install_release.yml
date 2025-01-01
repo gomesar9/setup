@@ -13,28 +13,31 @@
       register: ght_installed_version
       when: ght_stat.stat.exists
 
-    - name: "Definir valor padrão para gh_tool_version_regex [{{ gh_tool_name }}]"
+    - name: "Definir valor padrão para gh_tool_url_version_command [{{ gh_tool_name }}]"
       ansible.builtin.set_fact:
-        gh_tool_version_regex: "grep -oP 'location:.*/tag/\\K(v?\\d+\\.\\d+\\.\\d+)'"
-      when: gh_tool_version_regex is not defined
+        gh_tool_url_version_command: "grep -oP 'location:.*/tag/\\K(v?\\d+\\.\\d+\\.\\d+)'"
+      when: gh_tool_url_version_command is not defined
 
-    - name: "Check latest if any installed [{{ gh_tool_name }}]"
+    - name: "Check latest [{{ gh_tool_name }}]"
       ansible.builtin.shell: |
         set -o pipefail && curl -s -D- {{ gh_tool_repo }}/releases/latest |
-        {{ gh_tool_version_regex }}
+        {{ gh_tool_url_version_command }}
       args:
         executable: /bin/bash
       register: ght_latest_version
       changed_when: false
-      when: ght_installed_version is not skipped and ght_installed_version.rc == 0
+
+    - name: "Latest verion [{{ gh_tool_name }}]"
+      ansible.builtin.debug:
+        msg: "Latest version found: {{ ght_latest_version.stdout }}"
 
     - name: "Compare versions [{{ gh_tool_name }}]"
       ansible.builtin.debug:
         msg: "{{ gh_tool_name }} present and up to date (Version {{ ght_latest_version.stdout }})."
-      when: ght_latest_version is not skipped and ght_installed_version.stdout == ght_latest_version.stdout
+      when: ght_installed_version is not skipped and ght_installed_version.stdout == ght_latest_version.stdout
 
 - name: "Check for updates [{{ gh_tool_name }}]"
-  when: not(ght_latest_version is not skipped and ght_installed_version.stdout == ght_latest_version.stdout)
+  when: not(ght_installed_version is not skipped and ght_installed_version.stdout == ght_latest_version.stdout)
   block:
     - name: Create temporary directory
       ansible.builtin.tempfile:
@@ -44,7 +47,7 @@
 
     - name: "Download  archive [{{ gh_tool_name }}]"
       ansible.builtin.get_url:
-        url: "{{ gh_tool_repo }}/releases/latest/download/{{ gh_tool_download_file_name }}"
+        url: "{{ gh_tool_repo }}/releases/latest/download/{{ gh_tool_download_file_name | regex_replace('\\$\\{VERSION\\}', ght_latest_version.stdout) }}"
         dest: "{{ tmp_dir.path }}/gh_tool.tar.gz"
         validate_certs: false  # TODO: Checar certs
         mode: "0755"
@@ -53,6 +56,7 @@
       ansible.builtin.unarchive:
         src: "{{ tmp_dir.path }}/gh_tool.tar.gz"
         dest: "{{ tmp_dir.path }}"
+        extra_opts: "{{ gh_tool_unarchive_options | default([]) }}"
         remote_src: true
 
     - name: "Install executable [{{ gh_tool_name }}]"
