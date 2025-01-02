@@ -25,3 +25,6 @@ vim.o.tabstop = 4 -- A TAB character looks like 4 spaces
 
 -- PyEnv TODO: Only python files
 vim.env.PYENV_VERSION = vim.fn.system("pyenv version"):match("(%S+)%s+%(.-%)")
+
+-- LazyVim
+Keymap("n", "<leader>lzu", "<CMD>Lazy update<CR>")

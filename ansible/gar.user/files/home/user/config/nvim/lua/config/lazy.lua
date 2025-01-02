@@ -43,8 +43,9 @@ require("lazy").setup({
 	-- colorscheme that will be used when installing plugins.
 	install = { colorscheme = { "nightfly" } },
 	-- automatically check for plugin updates
-	checker = { enabled = true },
+	checker = {
+		enabled = true,
+		frequency = 3600 * 6, -- check for updates every 6 hours
+		notify = true,
+	},
 })
-
--- Após o carregamento do plugin tokyonight (colorscheme.lua)
-vim.cmd("colorscheme tokyonight")
