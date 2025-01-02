@@ -1,0 +1,20 @@
+- name: "Ensure Pyenv configs"
+  block:
+    - name: "Check pyenv-virtualenv latest version"
+      ansible.builtin.shell: |
+        set -o pipefail && curl -s -D- https://github.com/pyenv/pyenv-virtualenv/releases/latest |
+        grep -oP 'location:.*/tag/\K(v\d+\.\d+\.\d+)'
+      args:
+        executable: /bin/bash
+      register: pyenv_virtualenv_latest
+      changed_when: false
+
+    - name: Clona o repositório pyenv-virtualenv
+      ansible.builtin.git:
+        repo: https://github.com/pyenv/pyenv-virtualenv.git
+        dest: "{{ ansible_env.HOME }}/.local/share/pyenv/plugins/pyenv-virtualenv"
+        version: "{{ pyenv_virtualenv_latest.stdout }}" # Ou uma tag/branch específica, ex: v1.2.3
+        update: true # Atualiza o repositório se já existir
+        force: false # Força a clonagem mesmo se o diretório de destino existir e não for um repositório git válido
+        accept_hostkey: true # Aceita automaticamente a chave do host
+      become: true

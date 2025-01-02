@@ -105,3 +105,4 @@
       ansible.builtin.file:
         path: "{{ tmp_dir.path }}"
         state: absent
+      when: tmp_dir is not skipped

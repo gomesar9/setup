@@ -1,6 +1,6 @@
 - name: "Install Luarocks"
   block:
-    - name: "Get local version"
+    - name: "Get Luarocks local version"
       ansible.builtin.shell: |
         luarocks --version | grep -oP 'luarocks\s\K(\d+\.\d+\.\d+)$' || echo ''
       register: local_version
@@ -15,29 +15,32 @@
     #   register: stable_version
     #   changed_when: false
 
-    - name: "Set luarocks_stable_version"
+    - name: "Set luarocks_latest_version"
       ansible.builtin.set_fact:
-        luarocks_stable_version: "3.11.1"
-      when: luarocks_stable_version is not defined
+        luarocks_latest_version: "3.11.1"
+      when: luarocks_latest_version is not defined
 
-    - name: Display versions
+    - name: Display Luarocks versions
       ansible.builtin.debug:
-        msg: "Latest luarocks stable version found: {{ luarocks_stable_version }}. Local version found: {{ local_version.stdout | default('None') }}"
+        msg: "Latest luarocks stable version found: {{ luarocks_latest_version }}. Local version found: {{ local_version.stdout | default('None') }}"
 
-    - name: Create temporary directory
+- name: "Install/Update Luarocks"
+  when: local_version.stdout != luarocks_latest_version
+  block:
+    - name: Create Luarocks temporary directory
       ansible.builtin.tempfile:
         state: directory
         suffix: .luarocks
       register: tmp_dir
 
-    - name: Download
+    - name: Download Luarocks
       ansible.builtin.get_url:
-        url: "https://luarocks.github.io/luarocks/releases/luarocks-{{ luarocks_stable_version }}.tar.gz"
+        url: "https://luarocks.github.io/luarocks/releases/luarocks-{{ luarocks_latest_version }}.tar.gz"
         dest: "{{ tmp_dir.path }}/luarocks.tar.gz"
         validate_certs: true
         mode: "0755"
 
-    - name: "Extract archive"
+    - name: "Extract Larocks archive"
       ansible.builtin.unarchive:
         src: "{{ tmp_dir.path }}/luarocks.tar.gz"
         dest: "{{ tmp_dir.path }}"
@@ -45,7 +48,7 @@
           - "--strip-components=1"
         remote_src: true
 
-    - name: "Installig latest stable version"
+    - name: "Installig Luarocks latest version"
       ansible.builtin.shell:
         cmd: |
           cd {{ tmp_dir.path }} &&
@@ -56,10 +59,11 @@
       changed_when: false
       become: true
 
-- name: Clear
+- name: Clear Luarocks files
   block:
-    - name: "Ensure absent temporary dir"
+    - name: "Ensure absent luarocks temporary dir"
       ansible.builtin.file:
         path: "{{ tmp_dir.path }}"
         state: absent
       become: true
+      when: tmp_dir is not skipped

@@ -1,13 +1,13 @@
 - name: "Install Kubectl"
   block:
-    - name: "Get local version"
+    - name: "Get kubectl local version"
       ansible.builtin.shell: |
         kubectl version | grep -oP 'Client Version:\s\K(v?\d+\.\d+\.\d+)' || echo ''
       register: local_version
       ignore_errors: true
       changed_when: false
 
-    - name: "Get stable version"
+    - name: "Get kubectl stable version"
       ansible.builtin.uri:
         url: https://dl.k8s.io/release/stable.txt
         return_content: true
@@ -24,15 +24,18 @@
       ansible.builtin.debug:
         msg: "Latest kubectl stable version found: {{ kubectl_stable_version }}. Local version found: {{ local_version.stdout | default('None') }}"
 
-    - name: "Installig latest stable version"
+- name: "Install/Update kubectl"
+  when: local_version.stdout != kubectl_stable_version
+  block:
+    - name: "Installig kubectl latest version"
       ansible.builtin.shell:
         cmd: |
-          set -o pipefail && curl -LO "https://dl.k8s.io/release/{{ kubectl_stable_version }}/bin/linux/amd64/kubectl" &&
+          set -o pipefail && cd /tmp/ &&
+          curl -LO "https://dl.k8s.io/release/{{ kubectl_stable_version }}/bin/linux/amd64/kubectl" &&
           (echo $(curl -sL "https://dl.k8s.io/release/{{ kubectl_stable_version }}/bin/linux/amd64/kubectl.sha256") kubectl | sha256sum --check) &&
-          sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+          sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && rm ./kubectl
       args:
         executable: /bin/bash
       register: ght_installed_version
       changed_when: false
       become: true
-      when: local_version.rc != 0 or local_version.stdout != kubectl_stable_version
