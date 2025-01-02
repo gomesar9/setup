@@ -1,0 +1,67 @@
+- name: "Check Pyenv"
+  block:
+    - name: "Get local Pyenv version"
+      ansible.builtin.shell: |
+        pyenv -v | grep -oP '^pyenv\s\K(\d+\.\d+\.\d+)' || echo ''
+      register: local_version
+      changed_when: false
+
+    - name: "Check Pyenv latest version"
+      ansible.builtin.shell: |
+        set -o pipefail && curl -s -D- https://github.com/pyenv/pyenv/releases/latest |
+        grep -oP 'location:.*/tag/v\K(\d+\.\d+\.\d+)'
+      args:
+        executable: /bin/bash
+      register: pyenv_latest
+      changed_when: false
+
+    - name: "Set pyenv_latest_version"
+      ansible.builtin.set_fact:
+        pyenv_latest_version: "{{ pyenv_latest.stdout | trim }}"
+      when: pyenv_latest_version is not defined
+
+    - name: Display versions
+      ansible.builtin.debug:
+        msg: "Latest pyenv latest version found: {{ pyenv_latest_version }}. Local version found: {{ local_version.stdout | default('None') }}"
+
+- name: "Install Pyenv"
+  block:
+    - name: Create temporary directory
+      ansible.builtin.tempfile:
+        state: directory
+        suffix: .pyenv
+      register: tmp_dir
+
+    - name: "Download archive"
+      ansible.builtin.get_url:
+        url: "https://github.com/pyenv/pyenv/archive/refs/tags/v{{ pyenv_latest_version }}.zip"
+        dest: "{{ tmp_dir.path }}/pyenv.zip"
+        validate_certs: true
+        mode: "0755"
+
+    - name: Ensure directory
+      ansible.builtin.file:
+        path: "{{ ansible_env.HOME }}/.local/share/pyenv"
+        state: directory
+        mode: "0755"
+      register: share_dir
+
+    - name: "Extract archive"
+      ansible.builtin.unarchive:
+        src: "{{ tmp_dir.path }}/pyenv.zip"
+        dest: "{{ tmp_dir.path }}"
+        remote_src: true
+
+    - name: "Move to share folder"
+      ansible.builtin.shell:
+        cmd: |
+          mv {{ tmp_dir.path }}/pyenv-{{ pyenv_latest_version }}/* {{ share_dir.path }}/
+      changed_when: false
+
+    - name: "Ensure Pyenv symbolic link"
+      ansible.builtin.file:
+        src: "{{ share_dir.path }}/pyenv-{{ pyenv_latest_version }}/bin/pyenv"
+        dest: "/usr/local/bin/pyenv"
+        state: link
+        force: true
+      become: true
