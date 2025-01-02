@@ -1,8 +1,12 @@
 - name: Default applications via APT
   block:
-    - name: Install essential development utilities
+    - name: Install essential utilities
       ansible.builtin.apt:
         name: 
+          # Libs
+          - build-essential
+          - libreadline-dev
+          # Tools
           - bash-completion         # Autocompletar comandos no bash
           - bat                     # Alternativa ao cat com destaque de sintaxe
           - build-essential         # Compiladores e ferramentas de desenvolvimento
@@ -32,4 +36,12 @@
         update_cache: yes
       become: yes
 
+    - name: Install optional utilities
+      ansible.builtin.apt:
+        name: 
+          - lua5.4
+          - liblua5.4-dev
+        state: present
+        update_cache: yes
+      become: yes
 

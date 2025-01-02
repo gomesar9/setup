@@ -46,7 +46,7 @@
         suffix: .gh_tool
       register: tmp_dir
 
-    - name: "Download  archive [{{ gh_tool_name }}]"
+    - name: "Download archive [{{ gh_tool_name }}]"
       ansible.builtin.get_url:
         url: "{{ gh_tool_repo }}/releases/latest/download/{{ gh_tool_download_file_name | regex_replace('\\$\\{VERSION\\}', ght_latest_version.stdout) }}"
         dest: "{{ tmp_dir.path }}/gh_tool.tar.gz"
@@ -98,3 +98,10 @@
         force: true
       become: true
       when: gh_tool_symlink_path is defined
+
+- name: Clear
+  block:
+    - name: "Ensure absent temporary dir [{{ gh_tool_name }}]"
+      ansible.builtin.file:
+        path: "{{ tmp_dir.path }}"
+        state: absent
