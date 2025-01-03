@@ -76,7 +76,7 @@ ZSH_THEME="avit"
 #plugins=(git virtualenvwrapper oc)
 
 if [ -f "${ZSH}/oh-my-zsh.sh" ]; then
-	source "${ZSH}/oh-my-zsh.sh"
+    source "${ZSH}/oh-my-zsh.sh"
 fi
 
 # User configuration
@@ -131,26 +131,26 @@ export SDKMAN_DIR="$HOME/.sdkman"
 
 # Kubectl
 if [ -f "${HOME}/.config/zsh/autocomplete/kubectl.sh" ]; then
-	source "${HOME}/.config/zsh-autocomplete/kubectl/completion-zsh.sh"
+    source "${HOME}/.config/zsh-autocomplete/kubectl/completion-zsh.sh"
 fi
 
 # FZF
 if [[ ! "$PATH" == *${HOME}/.local/tools-from-git/fzf/bin* ]]; then
-	PATH="${PATH:+${PATH}:}${HOME}/.local/tools-from-git/fzf/bin"
+    PATH="${PATH:+${PATH}:}${HOME}/.local/tools-from-git/fzf/bin"
 fi
 
 if [ -f "${HOME}/.config/zsh/autocomplete/fzf.sh" ]; then
-	source "${HOME}/.config/zsh/autocomplete/fzf.sh"
+    source "${HOME}/.config/zsh/autocomplete/fzf.sh"
 fi
 
 # Python - Pyenv
 if command -v pyenv >/dev/null 2>&1; then
-	dirPath="$(find "$HOME/.local/share" -maxdepth 1 -type d -name "pyenv-*" 2>/dev/null)"
-	if [ -d "$dirPath" ]; then
-		export PYENV_ROOT="$dirPath"
-	fi
-	eval "$(pyenv init - zsh)"
-	eval "$(pyenv virtualenv-init -)"
+    dirPath="$HOME/.local/share/pyenv"
+    if [ -d "$dirPath" ]; then
+        export PYENV_ROOT="$dirPath"
+    fi
+    eval "$(pyenv init - zsh)"
+    eval "$(pyenv virtualenv-init -)"
 fi
 
 export FZF_DEFAULT_COMMAND='fd --type f --color=never --hidden'

@@ -4,6 +4,7 @@
 ## Pacotes gerenciados:
 - pyenv
   - pyenv-virtualenv
+  - global python set to 3.12.8
 - lua
 - luarocks
 - fzf

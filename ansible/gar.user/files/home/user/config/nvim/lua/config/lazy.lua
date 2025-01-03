@@ -49,3 +49,5 @@ require("lazy").setup({
 		notify = true,
 	},
 })
+
+vim.cmd("colorscheme tokyonight")

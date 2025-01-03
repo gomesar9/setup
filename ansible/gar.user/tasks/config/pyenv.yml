@@ -9,12 +9,44 @@
       register: pyenv_virtualenv_latest
       changed_when: false
 
-    - name: Clona o repositório pyenv-virtualenv
+    - name: "Clona o repositório pyenv-virtualenv"
       ansible.builtin.git:
-        repo: https://github.com/pyenv/pyenv-virtualenv.git
+        repo: "https://github.com/pyenv/pyenv-virtualenv.git"
         dest: "{{ ansible_env.HOME }}/.local/share/pyenv/plugins/pyenv-virtualenv"
         version: "{{ pyenv_virtualenv_latest.stdout }}" # Ou uma tag/branch específica, ex: v1.2.3
         update: true # Atualiza o repositório se já existir
         force: false # Força a clonagem mesmo se o diretório de destino existir e não for um repositório git válido
         accept_hostkey: true # Aceita automaticamente a chave do host
       become: true
+
+    - name: "Check global version"
+      ansible.builtin.shell:
+        cmd: |
+          set -o pipefail &&
+          pyenv version | grep -oP '^\K(\d+.\d+\.\d+)' || echo ''
+      args:
+        executable: /bin/zsh
+      register: current_global_version
+      changed_when: false
+
+    - name: "Set desired global version"
+      ansible.builtin.set_fact:
+        global_python_version: "3.12.8"
+      when: global_python_version is not defined
+
+    - name: "Install and configure Python as global ({{ global_python_version }})"
+      ansible.builtin.shell:
+        cmd: |
+          source {{ ansible_env.HOME }}/.zshrc &&
+          pyenv install "{{ global_python_version }}" &&
+          pyenv global "{{ global_python_version }}"
+      args:
+        executable: /bin/zsh
+        creates: "{{ ansible_env.HOME }}/.local/share/pyenv/versions/{{ global_python_version }}"
+      changed_when: false
+      when: current_global_version.stdout != global_python_version
+
+    - name: "Install global packages with pip ({{ global_python_version }})"
+      ansible.builtin.pip:
+        executable: "{{ ansible_env.HOME }}/.local/share/pyenv/versions/{{ global_python_version }}/bin/pip"
+        requirements: "{{ ansible_env.HOME }}/.config/python/global/{{ global_python_version }}/requirements.txt"

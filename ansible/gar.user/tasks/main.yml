@@ -26,6 +26,7 @@
     - {src: config/npm, dest: "{{ ansible_user_id }}/.config"}
     - {src: config/nvim, dest: "{{ ansible_user_id }}/.config"}
     - {src: config/eza, dest: "{{ ansible_user_id }}/.config"}
+    - {src: config/python, dest: "{{ ansible_user_id }}/.config"}
     - {src: rcfiles/gomesrc.sh, dest: "{{ ansible_user_id }}/.gomesrc"}
     - {src: rcfiles/zshrc.sh, dest: "{{ ansible_user_id }}/.zshrc"}
 

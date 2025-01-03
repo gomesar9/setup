@@ -18,13 +18,19 @@ return {
 			style = (function()
 				math.randomseed(os.time())
 				local randi = math.random(1, 10)
+				local theme_style = "night"
+
 				if randi < 5 then
-					return "night"
+					theme_style = "night"
 				elseif randi < 8 then
-					return "moon"
+					theme_style = "moon"
 				else
-					return "storm"
+					theme_style = "storm"
 				end
+
+				-- Enquanto é aleatório é bom saber fácil qual foi o estilo sorteado, com :messages
+				print("Theme style: " .. theme_style)
+				return theme_style
 			end)(),
 			-- use a hour based style
 			-- style = (function()
