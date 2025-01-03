@@ -1,15 +1,16 @@
 ################################################################################
 # Alias
 if command -v eza >/dev/null 2>&1; then
-	# ls será um link simbólico para eza, e o parâmetro -h no
-	# Eza adiciona headers, por isso não faz sentido aqui
-	alias çl='clear; ls -lF'
-	alias çla='clear; ls -laF'
-	alias t='ls -T -L 3' # Usa o próprio eza para árvore de diretório
+    # ls será um link simbólico para eza, e o parâmetro -h no
+    # Eza adiciona headers, por isso não faz sentido aqui
+    alias ls='eza'
+    alias çl='clear; ls -lF'
+    alias çla='clear; ls -laF'
+    alias t='ls -T -L 3' # Usa o próprio eza para árvore de diretório
 else
-	alias çl='clear; ls -lhF'
-	alias çla='clear; ls -lhaF'
-	alias t='tree -L 3'
+    alias çl='clear; ls -lhF'
+    alias çla='clear; ls -lhaF'
+    alias t='tree -L 3'
 fi
 alias çgit='cd /git'
 alias çtmp='cd /home/gomes/code/tmp/'
@@ -28,9 +29,9 @@ alias çnotes='vim ~/notes/gomes/'
 alias çnvim='cd ~/.config/nvim/ && vim . && cd -'
 
 if command -v yq >/dev/null 2>&1; then
-	alias me='yq ~/.me.yaml | fzf'
+    alias me='yq ~/.me.yaml | fzf'
 else
-	alias me='cat ~/.me.yaml | fzf'
+    alias me='cat ~/.me.yaml | fzf'
 fi
 # Arquivo criptografado
 alias mepriv='gpg -d ~/.mepriv.yaml.gpg 2>-'
@@ -43,7 +44,7 @@ alias gps='git push'
 alias gpl='git pull'
 
 if command -v zellij >/dev/null 2>&1; then
-	alias zgomes='zellij a gomes 2>/dev/null || zellij --layout gomes --session gomes'
+    alias zgomes='zellij a gomes 2>/dev/null || zellij --layout gomes --session gomes'
 fi
 
 ################################################################################
@@ -63,6 +64,11 @@ export PATH="${PATH}:/opt/go/bin"
 
 # Go
 if command -v go >/dev/null 2>&1; then
-	gopath="$(go env GOPATH)/bin"
-	export PATH="${PATH}:${gopath}"
+    gopath="$(go env GOPATH)/bin"
+    export PATH="${PATH}:${gopath}"
 fi
+
+# Javascript (Node)
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                       # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && source "$NVM_DIR/bash_completion" # This loads nvm bash_completion (também funciona para zsh)

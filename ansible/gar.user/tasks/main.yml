@@ -72,7 +72,7 @@
     gh_tool_final_path: /usr/local/bin/eza
     gh_tool_download_file_name: eza_x86_64-unknown-linux-gnu.tar.gz
     gh_tool_extracted_rel_file_path: eza
-    gh_tool_symlink_path: /usr/bin/ls
+    # gh_tool_symlink_path: /usr/bin/ls
 
 - name: Config Eza
   include_tasks: config/eza.yml
@@ -118,3 +118,9 @@
 
 - name: Config Pyenv
   include_tasks: config/pyenv.yml
+
+- name: Install NVM
+  include_tasks: install/nvm.yml
+
+- name: Config NVM
+  include_tasks: config/nvm.yml

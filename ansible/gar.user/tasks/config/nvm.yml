@@ -1,0 +1,30 @@
+- name: "Ensure nvm configs"
+  block:
+    - name: "Check default version"
+      ansible.builtin.shell:
+        cmd: |
+          set -o pipefail &&
+          source {{ ansible_env.HOME }}/.nvm/nvm.sh &&
+          nvm ls --no-colors 2>/dev/null | grep -oP '^default\s\->\s\K(v\d+\.\d+\.\d+)' || echo ''
+      args:
+        executable: /bin/zsh
+      register: current_default_version
+      changed_when: false
+
+    - name: "Set desired default Node version"
+      ansible.builtin.set_fact:
+        default_node_version: "v20.18.1"
+      when: default_node_version is not defined
+
+    - name: "Install and configure Node default version ({{ default_node_version }})"
+      ansible.builtin.shell:
+        cmd: |
+          source {{ ansible_env.HOME }}/.nvm/nvm.sh &&
+          nvm install "{{ default_node_version }}" &&
+          nvm alias default "{{ default_node_version }}"
+      args:
+        executable: /bin/bash
+      changed_when: false
+      when: current_default_version.stdout != default_node_version
+
+    # - name: "Install global packages with npm ({{ default_node_version }})"
