@@ -27,4 +27,20 @@ vim.o.tabstop = 4 -- A TAB character looks like 4 spaces
 vim.env.PYENV_VERSION = vim.fn.system("pyenv version"):match("(%S+)%s+%(.-%)")
 
 -- LazyVim
-Keymap("n", "<leader>lzu", "<CMD>Lazy update<CR>")
+-- Keymap("n", "<leader>lzu", "<CMD>Lazy update<CR>")
+
+Keymap("n", "<leader>lzu", function()
+	local lz = require("lazy")
+	--- @type LazyPlugin[]
+	local plugins = lz.plugins()
+	local plg_to_update = {}
+	for _, plg in ipairs(plugins) do
+		if plg._.updates then
+			-- print(plg.name)
+			plg_to_update[#plg_to_update + 1] = plg
+		end
+	end
+	lz.update({
+		plugins = plg_to_update,
+	})
+end)
