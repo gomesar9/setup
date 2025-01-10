@@ -127,7 +127,7 @@ export SDKMAN_DIR="$HOME/.sdkman"
 
 # Kubectl
 if [ -f "${HOME}/.config/zsh/autocomplete/kubectl.sh" ]; then
-    source "${HOME}/.config/zsh-autocomplete/kubectl/completion-zsh.sh"
+    source "${HOME}/.config/zsh/autocomplete/kubectl/completion-zsh.sh"
 fi
 
 # FZF
@@ -157,3 +157,6 @@ export FZF_CTRL_T_OPTS="--preview 'bat --color=always --line-range :50 {}'"
 
 export FZF_ALT_C_COMMAND='fd --type d --color=never --hidden'
 export FZF_ALT_C_OPTS="--preview 'tree -L 3 -C {} | head -50'"
+
+# Keybind
+source "${HOME}/.config/zsh/keybind.sh"
