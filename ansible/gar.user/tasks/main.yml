@@ -77,7 +77,7 @@
 - name: Config Eza
   include_tasks: config/eza.yml
   vars:
-    eza_theme: gruvbox-dark
+    eza_theme: rose-pine
 
 - name: Install Neovim
   include_tasks: install/from-gh/install_release.yml

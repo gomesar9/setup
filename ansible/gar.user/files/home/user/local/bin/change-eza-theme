@@ -1,0 +1,30 @@
+#!/bin/bash
+
+themeDir="${HOME}/.config/eza/themes"
+defaultThemePath="${HOME}/.config/eza/theme.yml"
+
+if [ ! -d "$themeDir" ]; then
+    printf "Eza themes directory not found (%s)\n" "$themeDir"
+    exit 1
+fi
+
+newTheme="$(find "$themeDir" -type f -name '*.yml' | sed 's@^.*/\(.*\)\.yml$@\1@' | fzf)"
+if [ -z "$newTheme" ]; then
+    # Caso tenha dado ESC no fzf, por exemplo. Cancela sem mensagem
+    exit 1
+fi
+
+newThemePath="${themeDir}/${newTheme}.yml"
+if [ -s "$newThemePath" ]; then
+    if ! ln -f -s "$newThemePath" "$defaultThemePath"; then
+        printf "Erro ao tentar criar link simbólico\n"
+        exit 1
+    fi
+    printf "Eza theme is now: \"%s\"\n" "$newTheme"
+    exit 0
+else
+    # Caso tenha dado problema na montagem do path ou arquivo tenha sido
+    # removido ou zerado enquanto o comando executava
+    printf "Theme file not found or empty (%s)\n" "$newThemePath"
+    exit 1
+fi
