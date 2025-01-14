@@ -1,0 +1,44 @@
+#!/bin/bash
+# Script to update Discord using .deb files (and sudo)
+
+BRANCH='stable' # canary, ptb, stable. Not implemented
+VERSION_FILE="${HOME}/.config/discord/version.json"
+
+update_discord() {
+    set -e
+
+    download_url='https://discord.com/api/download?platform=linux&format=deb'
+    tmp_file='/tmp/latest_discord.deb'
+
+    local version="$1"
+
+    curl -Ls -o "$tmp_file" "$download_url"
+    printf "Download [ok]\n"
+    sudo dpkg -i "$tmp_file"
+    printf "Install [OK]\n"
+    rm "$tmp_file"
+    printf "Remove tmp file [OK]\n"
+    printf "%s" "$version" >"$VERSION_FILE"
+    printf "Create %s [OK]\n" "$VERSION_FILE"
+}
+
+function check_and_update() {
+    api_updates="https://discord.com/api/updates/${BRANCH}?platform=linux"
+
+    latestVersion="$(curl -s "$api_updates" | jq)"
+
+    if [ -s "$VERSION_FILE" ]; then
+        currentVersion="$(jq '.' "$VERSION_FILE")"
+        if [ "$latestVersion" != "$currentVersion" ]; then
+            printf "updating from %s to %s\n" "$currentVersion" "$latestVersion"
+            update_discord "$latestVersion"
+        else
+            printf "up to date.\n%s\n" "$currentVersion"
+        fi
+    else
+        printf "version file not found. Installing version %s from script..\n" "$latestVersion"
+        update_discord "$latestVersion"
+    fi
+}
+
+check_and_update
