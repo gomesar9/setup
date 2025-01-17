@@ -43,3 +43,31 @@ local options = {
 for k, v in pairs(options) do
 	vim.opt[k] = v
 end
+
+vim.cmd([[
+  " Definir transparência global para vários grupos de destaque
+  highlight Normal guibg=NONE ctermbg=NONE
+  highlight NormalNC guibg=NONE ctermbg=NONE
+  highlight SignColumn guibg=NONE ctermbg=NONE
+  highlight EndOfBuffer guibg=NONE ctermbg=NONE
+  "highlight MsgArea guibg=NONE ctermbg=NONE
+  highlight TelescopeNormal guibg=NONE ctermbg=NONE
+  highlight TelescopeBorder guibg=NONE ctermbg=NONE
+  highlight NvimTreeNormal guibg=NONE ctermbg=NONE
+  " NvimTree
+  highlight NvimTreeVertSplit guibg=NONE ctermbg=NONE
+  highlight NvimTreeNormalNC guibg=NONE ctermbg=NONE
+]])
+
+-- Autocmd para diferenciar o buffer ativo dos inativos
+-- vim.api.nvim_create_autocmd({ "WinEnter", "BufWinEnter" }, {
+-- 	callback = function()
+-- 		vim.cmd("highlight Normal guibg=#1e1e2e ctermbg=NONE")
+-- 	end,
+-- })
+--
+-- vim.api.nvim_create_autocmd({ "WinLeave" }, {
+-- 	callback = function()
+-- 		vim.cmd("highlight Normal guibg=NONE ctermbg=NONE")
+-- 	end,
+-- })

@@ -20,6 +20,8 @@
   - cert-manager
 - lens
 - discord
+- telegram
+- flameshot
 
 
 [gh-tree-sitter-cli]: https://github.com/tree-sitter/tree-sitter/blob/master/cli/README.md

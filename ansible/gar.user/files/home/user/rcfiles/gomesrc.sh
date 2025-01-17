@@ -4,9 +4,13 @@ if command -v eza >/dev/null 2>&1; then
     # ls será um link simbólico para eza, e o parâmetro -h no
     # Eza adiciona headers, por isso não faz sentido aqui
     alias ls='eza'
+    alias l='ls -la --icons'
     alias çl='clear; ls -lF'
     alias çla='clear; ls -laF'
     alias t='ls -T -L 3' # Usa o próprio eza para árvore de diretório
+    # Caso tenha sido setado por temas do oh-my-zsh ou outro local
+    # Atrapalha nas cores do tema do Eza
+    unset LS_COLORS
 else
     alias çl='clear; ls -lhF'
     alias çla='clear; ls -lhaF'
