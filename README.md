@@ -24,4 +24,13 @@
 - flameshot
 
 
+# Teste
+
+
+Para facilitar utilize o script `./run.sh`, ao conectar no container execute os comandos:
+```
+alias ansync="ansible-playbook -i ${HOME}/inventory.yml /opt/ansible/main.yml"
+ansync
+```
+
 [gh-tree-sitter-cli]: https://github.com/tree-sitter/tree-sitter/blob/master/cli/README.md

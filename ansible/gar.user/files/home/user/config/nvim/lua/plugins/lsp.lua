@@ -49,7 +49,7 @@ return {
 			ensure_installed = {
 				"ansiblels",
 				"eslint",
-				"gopls",
+				-- "gopls",
 				"lua_ls",
 				-- "rust_analyzer",
 				-- "biome",
