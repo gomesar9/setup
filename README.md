@@ -8,6 +8,7 @@
   - global python set to 3.12.8
 - lua
 - luarocks
+- flameshot (via apt)
 - kubectl
 - fzf
 
@@ -21,7 +22,8 @@
 - lens
 - discord
 - telegram
-- flameshot
+- synergy
+- app launcher (krunner, rofi..)?
 
 
 # Teste

@@ -27,6 +27,7 @@
           # - duf                     # Exibição moderna do uso de disco
           # - eza                     # Alternativa moderna ao ls. Para manter atualizado foi alterado para ./from-gh
           # - fd-find                 # Localizador rápido (similar ao `find`).Alterado para /from-gh
+          - flameshot
           # - fzf                     # Pesquisa fuzzy para terminal # Muito desatualizado, alterado para ./from-gh
           - git                     # Controle de versão
           - gnupg                   # GPG para segurança
@@ -38,6 +39,7 @@
           - net-tools               # Ferramentas de rede
           - ranger                  # Gerenciador de arquivos em terminal
           - ripgrep                 # Pesquisa rápida em arquivos (similar ao grep, em Rust)
+          - rsync
           - tmux                    # Multiplexação de terminal
           - unzip                   # Extração de arquivos
           - vim                     # Editor de texto básico (fallback ao neovim)

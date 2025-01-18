@@ -125,3 +125,6 @@
 
 - name: Config NVM
   include_tasks: config/nvm.yml
+
+- name: Install Golang
+  include_tasks: install/go.yml

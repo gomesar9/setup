@@ -1,0 +1,95 @@
+- name: "Check Go"
+  tags: go
+  block:
+    - name: "Get local Go version"
+      ansible.builtin.shell: |
+        set -o pipefail &&
+        go version | grep -oP '\sgo\K(\d+\.\d+\.\d+)' || echo ''
+      register: local_version
+      args:
+        executable: /bin/bash
+      changed_when: false
+
+    - name: "Check Go latest version"
+      ansible.builtin.shell: |
+        set -o pipefail && curl -s https://go.dev/VERSION?m=text |
+        grep -oP '^go\K(\d+\.\d+\.\d+)'
+      args:
+        executable: /bin/bash
+      register: go_latest
+      changed_when: false
+
+    - name: "Set go_desired_version"
+      ansible.builtin.set_fact:
+        go_desired_version: "{{ go_latest.stdout | trim }}"
+      when: go_desired_version is not defined
+
+    - name: Display versions
+      ansible.builtin.debug:
+        msg: "Desired Go version: {{ go_desired_version }}. Local version found: {{ local_version.stdout | default('None') }}"
+
+- name: "Install Go"
+  when: local_version.stdout != go_desired_version
+  block:
+    - name: Create Golang temporary directory
+      ansible.builtin.tempfile:
+        state: directory
+        suffix: .golang
+      register: tmp_dir
+
+    - name: "Download Go {{ desired_vesion }}"
+      ansible.builtin.get_url:
+        url: "https://go.dev/dl/go{{ go_desired_version }}.linux-amd64.tar.gz"
+        dest: "{{ tmp_dir.path }}/golang.tar.gz"
+        validate_certs: true
+        mode: "0755"
+
+    - name: "Set go_dir_path"
+      ansible.builtin.set_fact:
+        go_dir_path: "/opt/go"
+      when: go_dir_path is not defined
+
+    - name: "Ensure go directory exists"
+      ansible.builtin.file:
+        path: "{{ go_dir_path }}"
+        state: directory
+        mode: "0755"
+        owner: "{{ ansible_user_id }}"
+        group: "{{ ansible_user_id }}"
+      become: true
+
+    - name: "Extract Golang archive"
+      ansible.builtin.unarchive:
+        src: "{{ tmp_dir.path }}/golang.tar.gz"
+        dest: "{{ tmp_dir.path }}"
+        remote_src: true
+
+    - name: "Sync directories with deletion of extra files"
+      ansible.posix.synchronize:
+        src: "{{ tmp_dir.path }}/go/" # A barra no final é crucial
+        dest: "{{ go_dir_path }}"
+        delete: true
+        recursive: true
+        archive: true
+        checksum: true
+        times: true
+        perms: true
+        owner: true
+        group: true
+
+    - name: "Ensure Go symbolic link"
+      ansible.builtin.file:
+        src: "{{ go_dir_path }}/bin/go"
+        dest: "/usr/local/bin/go"
+        state: link
+        force: true
+      become: true
+
+- name: Clear golang files
+  block:
+    - name: "Ensure absent golang temporary dir"
+      ansible.builtin.file:
+        path: "{{ tmp_dir.path }}"
+        state: absent
+      become: true
+      when: tmp_dir is not skipped
