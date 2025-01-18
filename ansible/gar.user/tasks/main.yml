@@ -128,3 +128,6 @@
 
 - name: Install Golang
   include_tasks: install/go.yml
+
+- name: Install Discord
+  include_tasks: install/discord.yml

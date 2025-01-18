@@ -48,8 +48,8 @@
           - zip                     # Compactação de arquivos
           - zsh                     # Shell alternativo ao bash
         state: present
-        update_cache: yes
-      become: yes
+        update_cache: true
+      become: true
 
     - name: Install optional utilities
       ansible.builtin.apt:
@@ -57,6 +57,6 @@
           - lua5.4
           - liblua5.4-dev
         state: present
-        update_cache: yes
-      become: yes
+        update_cache: true
+      become: true
 

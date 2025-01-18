@@ -1,0 +1,38 @@
+- name: "Check Discord"
+  tags: discord
+  block:
+    - name: "Set discord_script_path"
+      ansible.builtin.set_fact:
+        discord_script_path: "{{ ansible_env.HOME }}/.local/bin/discord-update"
+
+    - name: "Check discord-update script"
+      ansible.builtin.stat:
+        path: "{{ discord_script_path }}"
+      register: file_status
+
+    - name: "Install Discord dependencies"
+      ansible.builtin.apt:
+        name:
+          - libasound2
+          - libnotify4
+        state: present
+        update_cache: true
+      become: true
+      when:
+        - file_status.stat.exists
+        - file_status.stat.size > 0
+
+    - name: "Ensure Discord config directory exists"
+      ansible.builtin.file:
+        path: "{{ ansible_env.HOME }}/.config/discord"
+        state: directory
+        mode: "0755"
+
+    - name: "Check Discord installation"
+      ansible.builtin.shell: "{{ discord_script_path }}"
+      args:
+        executable: /bin/bash
+      changed_when: false
+      when:
+        - file_status.stat.exists
+        - file_status.stat.size > 0
