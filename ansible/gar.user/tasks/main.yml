@@ -87,7 +87,8 @@
     gh_tool_repo: https://github.com/junegunn/fzf
     gh_tool_version_command: echo -n "v$(fzf --version | grep -oP '^\d+\.\d+\.\d+')"
     gh_tool_final_path: /usr/local/bin/fzf
-    gh_tool_download_file_name: fzf-0.57.0-linux_amd64.tar.gz
+    gh_tool_url_version_command: grep -oP 'location:.*/tag/v\K(v?\d+\.\d+\.\d+)'
+    gh_tool_download_file_name: fzf-${VERSION}-linux_amd64.tar.gz
     gh_tool_extracted_rel_file_path: fzf
 
 - name: Install FdFind
