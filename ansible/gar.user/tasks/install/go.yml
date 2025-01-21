@@ -64,18 +64,35 @@
         dest: "{{ tmp_dir.path }}"
         remote_src: true
 
-    - name: "Sync directories with deletion of extra files"
-      ansible.posix.synchronize:
-        src: "{{ tmp_dir.path }}/go/" # A barra no final é crucial
+    # Parei de usar porque depende da collection "ansible.posix"
+    # - name: "Sync directories with deletion of extra files"
+    #   ansible.posix.synchronize:
+    #     src: "{{ tmp_dir.path }}/go/" # A barra no final é crucial
+    #     dest: "{{ go_dir_path }}"
+    #     delete: true
+    #     recursive: true
+    #     archive: true
+    #     checksum: true
+    #     times: true
+    #     perms: true
+    #     owner: true
+    #     group: true
+
+    - name: "Remove existing go directory"
+      ansible.builtin.file:
+        path: "{{ go_dir_path }}"
+        state: absent
+      become: true
+
+    - name: "Copy extracted go directory to final location"
+      ansible.builtin.copy:
+        src: "{{ tmp_dir.path }}/go/"
         dest: "{{ go_dir_path }}"
-        delete: true
-        recursive: true
-        archive: true
-        checksum: true
-        times: true
-        perms: true
-        owner: true
-        group: true
+        remote_src: true
+        mode: "0755"
+        owner: "{{ ansible_user_id }}"
+        group: "{{ ansible_user_id }}"
+      become: true
 
     - name: "Ensure Go symbolic link"
       ansible.builtin.file:

@@ -1,1 +1,3 @@
+ansible-core>=2.14.0
+python-debian>=0.1.49
 ansible-dev-tools>=24.12.0

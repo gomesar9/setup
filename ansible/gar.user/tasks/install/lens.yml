@@ -1,0 +1,42 @@
+# TODO:
+# Criar task para garantir keyring e apt.sources
+# Criar task para intalar via apt os demais programas, dependentes de keyring
+- name: "Check Lens"
+  tags: lens
+  block:
+    - name: "Ensure keyrings directory exists with correct permissions"
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: "0755"
+        owner: root
+        group: root
+      become: true
+
+    - name: "Download Lens GPG key"
+      ansible.builtin.get_url:
+        url: "https://downloads.k8slens.dev/keys/gpg"
+        dest: "/etc/apt/keyrings/lens.asc"
+        mode: '0644'
+      become: true
+
+    - name: "Add Lens repository with GPG key"
+      ansible.builtin.deb822_repository:
+        name: lens
+        types:
+          - deb
+        uris: "https://downloads.k8slens.dev/apt/debian"
+        suites:
+          - stable
+        components:
+          - main
+        signed_by: "/etc/apt/keyrings/lens.asc"
+        state: present
+      become: true
+
+    - name: "Install Lens"
+      ansible.builtin.apt:
+        name: lens
+        state: present
+        update_cache: true
+      become: true

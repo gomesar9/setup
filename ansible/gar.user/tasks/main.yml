@@ -132,3 +132,6 @@
 
 - name: Install Discord
   include_tasks: install/discord.yml
+
+- name: Install Lens
+  include_tasks: install/lens.yml

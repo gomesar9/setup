@@ -2,32 +2,29 @@
 
 
 ## Pacotes gerenciados:
-- neovim
-- pyenv
-  - pyenv-virtualenv
-  - global python set to 3.12.8
+- discord
+- flameshot (via apt)
+- fzf
+- go
+- kubectl
+- lens
 - lua
 - luarocks
-- flameshot (via apt)
-- kubectl
-- fzf
-
+- neovim
+- pyenv
+  - global python set to 3.12.8
+  - pyenv-virtualenv
 
 ### Pacotes a serem adicionados:
 - [tree-sitter-cli][gh-tree-sitter-cli]
-- go
 - sdk-manager
 - minikube
   - cert-manager
-- lens
-- discord
 - telegram
 - synergy
 - app launcher (krunner, rofi..)?
 
-
 # Teste
-
 
 Para facilitar utilize o script `./run.sh`, ao conectar no container execute os comandos:
 ```
