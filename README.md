@@ -11,6 +11,7 @@
 - lua
 - luarocks
 - neovim
+  - config de plugins
 - pyenv
   - global python set to 3.12.8
   - pyenv-virtualenv
