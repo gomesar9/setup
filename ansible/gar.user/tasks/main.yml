@@ -49,19 +49,19 @@
   include_tasks: install/from-gh/install_release.yml
   vars:
     gh_tool_name: Neovim
+    gh_tool_desired_version: v0.10.4
     gh_tool_repo: https://github.com/neovim/neovim
     gh_tool_version_command: nvim --version | grep -oP 'NVIM \K(v\d+\.\d+\.\d+)'
     gh_tool_final_path: /usr/local/bin/nvim
-    gh_tool_download_file_name: nvim-linux64.tar.gz
-    gh_tool_extracted_rel_file_path: nvim-linux64/bin/nvim
+    gh_tool_download_file_name: nvim-linux-x86_64.tar.gz
+    gh_tool_extracted_rel_file_path: nvim-linux-x86_64/bin/nvim
     gh_tool_symlink_path: /usr/bin/vim
     support_files:
-      - { src: "nvim-linux64/share/applications/", dest: "/usr/share/applications/" }
-      - { src: "nvim-linux64/share/icons/", dest: "/usr/share/icons/" }
-      - { src: "nvim-linux64/share/locale/", dest: "/usr/share/locale/" }
-      - { src: "nvim-linux64/share/man/", dest: "/usr/share/man/" }
-      - { src: "nvim-linux64/share/nvim/", dest: "/usr/local/share/nvim/" }
-      - { src: "nvim-linux64/lib/nvim/", dest: "/usr/local/lib/" }
+      - { src: "nvim-linux-x86_64/share/applications/", dest: "/usr/share/applications/" }
+      - { src: "nvim-linux-x86_64/share/icons/", dest: "/usr/share/icons/" }
+      - { src: "nvim-linux-x86_64/share/man/", dest: "/usr/share/man/" }
+      - { src: "nvim-linux-x86_64/share/nvim/", dest: "/usr/local/share/nvim/" }
+      - { src: "nvim-linux-x86_64/lib/nvim/", dest: "/usr/local/lib/" }
 
 # Instalação de outras ferramentas via Github
 - name: Include Eza install
@@ -80,16 +80,20 @@
   vars:
     eza_theme: rose-pine
 
-- name: Install Neovim
+- name: Install Fuzzy Finder
   include_tasks: install/from-gh/install_release.yml
   vars:
     gh_tool_name: Fuzzy Finder
     gh_tool_repo: https://github.com/junegunn/fzf
-    gh_tool_version_command: echo -n "v$(fzf --version | grep -oP '^\d+\.\d+\.\d+')"
+    gh_tool_version_command: fzf --version | grep -oP '^\d+\.\d+\.\d+'
     gh_tool_final_path: /usr/local/bin/fzf
-    gh_tool_url_version_command: grep -oP 'location:.*/tag/v\K(v?\d+\.\d+\.\d+)'
+    gh_tool_url_version_command: grep -oP 'location:.*/tag/v?\K(\d+\.\d+\.\d+)'
+    gh_tool_url_version: v${VERSION}
     gh_tool_download_file_name: fzf-${VERSION}-linux_amd64.tar.gz
     gh_tool_extracted_rel_file_path: fzf
+
+- name: Config FZF
+  include_tasks: config/fzf.yml
 
 - name: Install FdFind
   include_tasks: install/from-gh/install_release.yml
@@ -102,9 +106,6 @@
     gh_tool_extracted_rel_file_path: fd
     gh_tool_unarchive_options:
       - "--strip-components=1"
-
-- name: Config FZF
-  include_tasks: config/fzf.yml
 
 # Instalações únicas
 - name: Install kubectl

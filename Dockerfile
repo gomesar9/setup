@@ -1,4 +1,4 @@
-FROM debian:11
+FROM debian:12
 
 # Atualiza o sistema e instala pacotes básicos
 COPY init.sh .

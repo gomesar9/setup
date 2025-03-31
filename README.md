@@ -1,6 +1,5 @@
 # SETUP
 
-
 ## Pacotes gerenciados:
 - discord
 - flameshot (via apt)
@@ -24,6 +23,16 @@
 - telegram
 - synergy
 - app launcher (krunner, rofi..)?
+- dbeaver-ce
+
+# Uso
+
+```
+sudo apt install -y software-properties-common gpg curl sudo python3-pip python3-venv
+python3 -m venv ./
+./bin/pip3 install ansible-core ansible-dev-tools python-debian
+ansible-playbook ./ansible
+```
 
 # Teste
 

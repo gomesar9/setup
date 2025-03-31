@@ -27,18 +27,25 @@
       register: ght_latest_version
       changed_when: false
 
+    - name: "Set desired version"
+      ansible.builtin.shell: echo "{{ gh_tool_desired_version | default(ght_latest_version.stdout) }}"
+      args:
+        executable: /bin/bash
+      register: ght_desired_version
+      changed_when: false
+
     - name: "Display versions [{{ gh_tool_name }}]"
       ansible.builtin.debug:
-        msg: "Latest version found: {{ ght_latest_version.stdout }}. Local version found: {{ ght_installed_version.stdout | default('None') }}"
-      when: not(ght_installed_version is not skipped and ght_installed_version.stdout == ght_latest_version.stdout)
+        msg: "[VER] Latest: {{ ght_latest_version.stdout }}. Local: {{ ght_installed_version.stdout | default('None') }}. Desired: {{ ght_desired_version.stdout }}"
+      when: not(ght_installed_version is not skipped and ght_installed_version.stdout == ght_desired_version.stdout)
 
     - name: "Compare versions [{{ gh_tool_name }}]"
       ansible.builtin.debug:
-        msg: "{{ gh_tool_name }} present and up to date (Version {{ ght_latest_version.stdout }})."
-      when: ght_installed_version is not skipped and ght_installed_version.stdout == ght_latest_version.stdout
+        msg: "{{ gh_tool_name }} present and up to date (Version {{ ght_desired_version.stdout }})."
+      when: ght_installed_version is not skipped and ght_installed_version.stdout == ght_desired_version.stdout
 
 - name: "Check for updates [{{ gh_tool_name }}]"
-  when: not(ght_installed_version is not skipped and ght_installed_version.stdout == ght_latest_version.stdout)
+  when: not(ght_installed_version is not skipped and ght_installed_version.stdout == ght_desired_version.stdout)
   block:
     - name: Create temporary directory
       ansible.builtin.tempfile:
@@ -46,9 +53,18 @@
         suffix: .gh_tool
       register: tmp_dir
 
+    - name: "Build download URL"
+      ansible.builtin.shell: |
+        echo -n "{{ gh_tool_repo }}/releases/download/{{ url_version }}/{{ file_name }}"
+      register: ght_url_download
+      vars:
+        url_version: "{{ gh_tool_url_version | default(ght_desired_version.stdout) | regex_replace('\\$\\{VERSION\\}', ght_desired_version.stdout) | trim }}"
+        file_name: "{{ gh_tool_download_file_name | regex_replace('\\$\\{VERSION\\}', ght_desired_version.stdout) | trim }}"
+      changed_when: false
+
     - name: "Download archive [{{ gh_tool_name }}]"
       ansible.builtin.get_url:
-        url: "{{ gh_tool_repo }}/releases/latest/download/{{ gh_tool_download_file_name | regex_replace('\\$\\{VERSION\\}', ght_latest_version.stdout) }}"
+        url: "{{ ght_url_download.stdout }}"
         dest: "{{ tmp_dir.path }}/gh_tool.tar.gz"
         validate_certs: false  # TODO: Checar certs
         mode: "0755"

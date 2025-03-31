@@ -11,7 +11,8 @@ source "${HOME}/.gomesrc"
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
 #ZSH_THEME="robbyrussell"
-ZSH_THEME="avit"
+# ZSH_THEME="avit"
+ZSH_THEME="cypher"
 #ZSH_THEME="eastwood"
 
 # Set list of themes to pick from when loading at random
