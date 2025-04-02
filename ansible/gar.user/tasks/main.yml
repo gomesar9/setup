@@ -136,3 +136,9 @@
 
 - name: Install Lens
   include_tasks: install/lens.yml
+
+- name: User config
+  user:
+    name: "{{ ansible_user_id }}"
+    shell: /bin/zsh
+  become: true
