@@ -24,6 +24,7 @@
 - synergy
 - app launcher (krunner, rofi..)?
 - dbeaver-ce
+- zellij
 
 # Uso
 
@@ -34,6 +35,24 @@ python3 -m venv ./
 ansible-playbook ./ansible
 ```
 
+## Problemas conhecidos
+
+Em S.Os mais novos pode ser que as libs requeridas pelo Discord não estejam mais disponíveis. No Ubuntu 24.04, por exemplo, o pacote libasound2 foi substituído por libasound2t64. Essa mudança foi implementada para resolver o problema do "Ano 2038", atualizando diversas bibliotecas para suportarem valores de tempo de 64 bits. Nesse caso utilizar as libs com `t64` no final, como mostra o diff:
+
+```
+--- a/ansible/gar.user/tasks/install/discord.yml
++++ b/ansible/gar.user/tasks/install/discord.yml
+@@ -13,8 +13,8 @@
+     - name: "Install Discord dependencies"
+       ansible.builtin.apt:
+         name:
+-          - libasound2
++          - libasound2t64
+           - libnotify4
+         state: present
+         update_cache: true
+```
+
 # Teste
 
 Para facilitar utilize o script `./run.sh`, ao conectar no container execute os comandos:
@@ -41,5 +60,6 @@ Para facilitar utilize o script `./run.sh`, ao conectar no container execute os 
 alias ansync="ansible-playbook -i ${HOME}/inventory.yml /opt/ansible/main.yml"
 ansync
 ```
+
 
 [gh-tree-sitter-cli]: https://github.com/tree-sitter/tree-sitter/blob/master/cli/README.md
