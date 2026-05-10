@@ -6,5 +6,8 @@ require("config.maps")
 vim.opt.termguicolors = true
 require("config.lazy")
 
+-- Precise ser depois do Lazy para garantir telescope
+require("config.lsp")
+
 -- Precisa vir depois, para sobrescrever opções de plugins
 require("config.options")

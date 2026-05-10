@@ -3,7 +3,7 @@
   block:
     - name: "Set discord_script_path"
       ansible.builtin.set_fact:
-        discord_script_path: "{{ ansible_env.HOME }}/.local/bin/discord-update"
+        discord_script_path: "{{ ansible_facts['env'].HOME }}/.local/bin/discord-update"
 
     - name: "Check discord-update script"
       ansible.builtin.stat:
@@ -24,7 +24,7 @@
 
     - name: "Ensure Discord config directory exists"
       ansible.builtin.file:
-        path: "{{ ansible_env.HOME }}/.config/discord"
+        path: "{{ ansible_facts['env'].HOME }}/.config/discord"
         state: directory
         mode: "0755"
 

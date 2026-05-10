@@ -2,8 +2,9 @@
   block:
     - name: Install essential utilities
       ansible.builtin.apt:
-        name: 
+        name:
           # Libs
+          - libc6 # Requerido por nvim 0.12+
           - build-essential
           - libreadline-dev
           # Python build requirements
@@ -20,43 +21,43 @@
           - libffi-dev
           - liblzma-dev
           # Tools
-          - bash-completion         # Autocompletar comandos no bash
-          - bat                     # Alternativa ao cat com destaque de sintaxe
-          - build-essential         # Compiladores e ferramentas de desenvolvimento
-          - curl                    # Transferência de dados
+          - bash-completion # Autocompletar comandos no bash
+          - bat # Alternativa ao cat com destaque de sintaxe
+          - build-essential # Compiladores e ferramentas de desenvolvimento
+          - curl # Transferência de dados
           # - duf                     # Exibição moderna do uso de disco
           # - eza                     # Alternativa moderna ao ls. Para manter atualizado foi alterado para ./from-gh
           # - fd-find                 # Localizador rápido (similar ao `find`).Alterado para /from-gh
           - flameshot
           # - fzf                     # Pesquisa fuzzy para terminal # Muito desatualizado, alterado para ./from-gh
-          - git                     # Controle de versão
-          - gnupg                   # GPG para segurança
-          - htop                    # Monitoramento do sistema
-          - httpie                  # Cliente HTTP amigável para terminal
-          - jq                      # Manipulação de JSON
-          - ncdu                    # Análise de uso de disco
-          - neofetch                # Exibição de informações do sistema
-          - net-tools               # Ferramentas de rede
-          - ranger                  # Gerenciador de arquivos em terminal
-          - ripgrep                 # Pesquisa rápida em arquivos (similar ao grep, em Rust)
+          - git # Controle de versão
+          - gnupg # GPG para segurança
+          - htop # Monitoramento do sistema
+          - httpie # Cliente HTTP amigável para terminal
+          - jq # Manipulação de JSON
+          - ncdu # Análise de uso de disco
+          - neofetch # Exibição de informações do sistema
+          - net-tools # Ferramentas de rede
+          - ranger # Gerenciador de arquivos em terminal
+          - ripgrep # Pesquisa rápida em arquivos (similar ao grep, em Rust)
           - rsync
-          - tmux                    # Multiplexação de terminal
-          - unzip                   # Extração de arquivos
-          - vim                     # Editor de texto básico (fallback ao neovim)
-          - wget                    # Download de arquivos
+          - tk-dev
+          - tmux # Multiplexação de terminal
+          - unzip # Extração de arquivos
+          - vim # Editor de texto básico (fallback ao neovim)
+          - wget # Download de arquivos
           # - zellij                  # Multiplexador de terminal moderno. Indiponível em alguns apt, movido para ./from-gh
-          - zip                     # Compactação de arquivos
-          - zsh                     # Shell alternativo ao bash
+          - zip # Compactação de arquivos
+          - zsh # Shell alternativo ao bash
         state: present
         update_cache: true
       become: true
 
     - name: Install optional utilities
       ansible.builtin.apt:
-        name: 
+        name:
           - lua5.4
           - liblua5.4-dev
         state: present
         update_cache: true
       become: true
-

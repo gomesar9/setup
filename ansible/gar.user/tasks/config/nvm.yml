@@ -4,7 +4,7 @@
       ansible.builtin.shell:
         cmd: |
           set -o pipefail &&
-          source {{ ansible_env.HOME }}/.nvm/nvm.sh &&
+          source {{ ansible_facts['env'].HOME }}/.nvm/nvm.sh &&
           nvm ls --no-colors 2>/dev/null | grep -oP '^default\s\->\s\K(v\d+\.\d+\.\d+)' || echo ''
       args:
         executable: /bin/zsh
@@ -19,7 +19,7 @@
     - name: "Install and configure Node default version ({{ default_node_version }})"
       ansible.builtin.shell:
         cmd: |
-          source {{ ansible_env.HOME }}/.nvm/nvm.sh &&
+          source {{ ansible_facts['env'].HOME }}/.nvm/nvm.sh &&
           nvm install "{{ default_node_version }}" &&
           nvm alias default "{{ default_node_version }}"
       args:

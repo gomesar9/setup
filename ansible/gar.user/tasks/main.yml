@@ -1,11 +1,11 @@
 ---
 - name: Create default directory structure
   ansible.builtin.file:
-    path: "/home/{{ ansible_user_id }}/{{ item }}"
+    path: "/home/{{ ansible_facts['user_id'] }}/{{ item }}"
     state: directory
-    owner: "{{ ansible_user_id }}"
-    group: "{{ ansible_user_id }}"
-    mode: '700'
+    owner: "{{ ansible_facts['user_id'] }}"
+    group: "{{ ansible_facts['user_id'] }}"
+    mode: "700"
   loop:
     - .cache/nvim/undodir
     - .local/
@@ -15,30 +15,30 @@
   ansible.builtin.copy:
     src: "home/user/{{ item['src'] }}"
     dest: "/home/{{ item['dest'] }}"
-    owner: "{{ ansible_user_id }}"
-    group: "{{ ansible_user_id }}"
-    mode: '600'
-    directory_mode: '700'
+    owner: "{{ ansible_facts['user_id'] }}"
+    group: "{{ ansible_facts['user_id'] }}"
+    mode: "600"
+    directory_mode: "700"
   loop:
-    - {src: config/bash, dest: "{{ ansible_user_id }}/.config"}
-    - {src: config/fontconfig, dest: "{{ ansible_user_id }}/.config"}
-    - {src: config/git, dest: "{{ ansible_user_id }}/.config"}
-    - {src: config/npm, dest: "{{ ansible_user_id }}/.config"}
-    - {src: config/nvim, dest: "{{ ansible_user_id }}/.config"}
-    - {src: config/eza, dest: "{{ ansible_user_id }}/.config"}
-    - {src: config/python, dest: "{{ ansible_user_id }}/.config"}
-    - {src: config/zsh, dest: "{{ ansible_user_id }}/.config"}
-    - {src: rcfiles/gomesrc.sh, dest: "{{ ansible_user_id }}/.gomesrc"}
-    - {src: rcfiles/zshrc.sh, dest: "{{ ansible_user_id }}/.zshrc"}
+    - { src: config/bash, dest: "{{ ansible_facts['user_id'] }}/.config" }
+    - { src: config/fontconfig, dest: "{{ ansible_facts['user_id'] }}/.config" }
+    - { src: config/git, dest: "{{ ansible_facts['user_id'] }}/.config" }
+    - { src: config/npm, dest: "{{ ansible_facts['user_id'] }}/.config" }
+    - { src: config/nvim, dest: "{{ ansible_facts['user_id'] }}/.config" }
+    - { src: config/eza, dest: "{{ ansible_facts['user_id'] }}/.config" }
+    - { src: config/python, dest: "{{ ansible_facts['user_id'] }}/.config" }
+    - { src: config/zsh, dest: "{{ ansible_facts['user_id'] }}/.config" }
+    - { src: rcfiles/gomesrc.sh, dest: "{{ ansible_facts['user_id'] }}/.gomesrc" }
+    - { src: rcfiles/zshrc.sh, dest: "{{ ansible_facts['user_id'] }}/.zshrc" }
 
 - name: Copy scripts
   ansible.builtin.copy:
     src: home/user/local/bin
-    dest: "/home/{{ ansible_user_id }}/.local"
-    owner: "{{ ansible_user_id }}"
-    group: "{{ ansible_user_id }}"
-    mode: '700'
-    directory_mode: '700'
+    dest: "/home/{{ ansible_facts['user_id'] }}/.local"
+    owner: "{{ ansible_facts['user_id'] }}"
+    group: "{{ ansible_facts['user_id'] }}"
+    mode: "700"
+    directory_mode: "700"
 
 # Instalação de ferramentas padrão
 - name: Include basic system tools
@@ -49,7 +49,7 @@
   include_tasks: install/from-gh/install_release.yml
   vars:
     gh_tool_name: Neovim
-    gh_tool_desired_version: v0.10.4
+    # gh_tool_desired_version: v0.10.4
     gh_tool_repo: https://github.com/neovim/neovim
     gh_tool_version_command: nvim --version | grep -oP 'NVIM \K(v\d+\.\d+\.\d+)'
     gh_tool_final_path: /usr/local/bin/nvim
@@ -57,7 +57,10 @@
     gh_tool_extracted_rel_file_path: nvim-linux-x86_64/bin/nvim
     gh_tool_symlink_path: /usr/bin/vim
     support_files:
-      - { src: "nvim-linux-x86_64/share/applications/", dest: "/usr/share/applications/" }
+      - {
+          src: "nvim-linux-x86_64/share/applications/",
+          dest: "/usr/share/applications/",
+        }
       - { src: "nvim-linux-x86_64/share/icons/", dest: "/usr/share/icons/" }
       - { src: "nvim-linux-x86_64/share/man/", dest: "/usr/share/man/" }
       - { src: "nvim-linux-x86_64/share/nvim/", dest: "/usr/local/share/nvim/" }
@@ -139,6 +142,6 @@
 
 - name: User config
   user:
-    name: "{{ ansible_user_id }}"
+    name: "{{ ansible_facts['user_id'] }}"
     shell: /bin/zsh
   become: true

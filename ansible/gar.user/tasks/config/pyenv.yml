@@ -12,7 +12,7 @@
     - name: "Clona o repositório pyenv-virtualenv"
       ansible.builtin.git:
         repo: "https://github.com/pyenv/pyenv-virtualenv.git"
-        dest: "{{ ansible_env.HOME }}/.local/share/pyenv/plugins/pyenv-virtualenv"
+        dest: "{{ ansible_facts['env'].HOME }}/.local/share/pyenv/plugins/pyenv-virtualenv"
         version: "{{ pyenv_virtualenv_latest.stdout }}" # Ou uma tag/branch específica, ex: v1.2.3
         update: true # Atualiza o repositório se já existir
         force: false # Força a clonagem mesmo se o diretório de destino existir e não for um repositório git válido
@@ -37,16 +37,16 @@
     - name: "Install and configure Python as global ({{ global_python_version }})"
       ansible.builtin.shell:
         cmd: |
-          source {{ ansible_env.HOME }}/.zshrc &&
+          source {{ ansible_facts['env'].HOME }}/.zshrc &&
           pyenv install "{{ global_python_version }}" &&
           pyenv global "{{ global_python_version }}"
       args:
         executable: /bin/zsh
-        creates: "{{ ansible_env.HOME }}/.local/share/pyenv/versions/{{ global_python_version }}"
+        creates: "{{ ansible_facts['env'].HOME }}/.local/share/pyenv/versions/{{ global_python_version }}"
       changed_when: false
       when: current_global_version.stdout != global_python_version
 
     - name: "Install global packages with pip ({{ global_python_version }})"
       ansible.builtin.pip:
-        executable: "{{ ansible_env.HOME }}/.local/share/pyenv/versions/{{ global_python_version }}/bin/pip"
-        requirements: "{{ ansible_env.HOME }}/.config/python/global/{{ global_python_version }}/requirements.txt"
+        executable: "{{ ansible_facts['env'].HOME }}/.local/share/pyenv/versions/{{ global_python_version }}/bin/pip"
+        requirements: "{{ ansible_facts['env'].HOME }}/.config/python/global/{{ global_python_version }}/requirements.txt"

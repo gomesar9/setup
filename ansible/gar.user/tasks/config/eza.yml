@@ -2,8 +2,8 @@
   block:
     - name: "Ensure theme"
       ansible.builtin.file:
-        src: "{{ ansible_env.HOME }}/.config/eza/themes/{{ eza_theme | default('default') }}.yml"
-        dest: "{{ ansible_env.HOME }}/.config/eza/theme.yml"
+        src: "{{ ansible_facts['env'].HOME }}/.config/eza/themes/{{ eza_theme | default('default') }}.yml"
+        dest: "{{ ansible_facts['env'].HOME }}/.config/eza/theme.yml"
         state: link
         force: true
 

@@ -1,0 +1,28 @@
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: mk-issuer
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: mk-tls
+  namespace: default
+spec:
+  secretName: mk-tls
+  isCA: true
+  duration: 2160h # 90 days
+  renewBefore: 360h # 15 days before expiration
+  commonName: mk.local
+  subject:
+    organizations:
+      - Minikube Local
+  dnsNames:
+    - "*.mk.local"
+    - mk.local
+  issuerRef:
+    name: mk-issuer
+    kind: ClusterIssuer

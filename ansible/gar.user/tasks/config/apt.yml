@@ -1,0 +1,6 @@
+- name: APT config
+  block:
+    - name: Ensure apt-transport-https is installed
+      ansible.builtin.apt:
+        name: apt-transport-https
+        state: present
