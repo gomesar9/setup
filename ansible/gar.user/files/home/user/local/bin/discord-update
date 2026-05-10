@@ -1,44 +1,70 @@
-#!/bin/bash
-# Script to update Discord using .deb files (and sudo)
+#!/usr/bin/env bash
+#
+# update-discord.sh — instala ou atualiza o Discord no Linux (Debian/Ubuntu) via .deb oficial.
+#
+# Uso: ./discord-update.sh
+#
+# Requer: curl, jq, dpkg, sudo
 
-BRANCH='stable' # canary, ptb, stable. Not implemented
-VERSION_FILE="${HOME}/.config/discord/version.json"
+set -euo pipefail
 
-update_discord() {
-    set -e
+UPDATES_URL="https://discord.com/api/updates/stable?platform=linux"
+DOWNLOAD_URL="https://discord.com/api/download?platform=linux"
+TMP_DEB="$(mktemp --suffix=.deb)"
 
-    download_url='https://discord.com/api/download?platform=linux&format=deb'
-    tmp_file='/tmp/latest_discord.deb'
-
-    local version="$1"
-
-    curl -Ls -o "$tmp_file" "$download_url"
-    printf "Download [ok]\n"
-    sudo dpkg -i "$tmp_file"
-    printf "Install [OK]\n"
-    rm "$tmp_file"
-    printf "Remove tmp file [OK]\n"
-    printf "%s" "$version" >"$VERSION_FILE"
-    printf "Create %s [OK]\n" "$VERSION_FILE"
+cleanup() {
+    rm -f "$TMP_DEB"
 }
+trap cleanup EXIT
 
-function check_and_update() {
-    api_updates="https://discord.com/api/updates/${BRANCH}?platform=linux"
-
-    latestVersion="$(curl -s "$api_updates" | jq)"
-
-    if [ -s "$VERSION_FILE" ]; then
-        currentVersion="$(jq '.' "$VERSION_FILE")"
-        if [ "$latestVersion" != "$currentVersion" ]; then
-            printf "updating from %s to %s\n" "$currentVersion" "$latestVersion"
-            update_discord "$latestVersion"
-        else
-            printf "up to date.\n%s\n" "$currentVersion"
-        fi
-    else
-        printf "version file not found. Installing version %s from script..\n" "$latestVersion"
-        update_discord "$latestVersion"
+# --- checa dependências -------------------------------------------------------
+for cmd in curl jq dpkg sudo; do
+    if ! command -v "$cmd" >/dev/null 2>&1; then
+        echo "Erro: '$cmd' não está instalado." >&2
+        exit 1
     fi
-}
+done
 
-check_and_update
+# --- versão mais recente disponível ------------------------------------------
+echo ":: Consultando versão mais recente do Discord..."
+LATEST_VERSION="$(curl -fsSL "$UPDATES_URL" | jq -r '.name')"
+
+if [[ -z "$LATEST_VERSION" || "$LATEST_VERSION" == "null" ]]; then
+    echo "Erro: não foi possível obter a versão mais recente." >&2
+    exit 1
+fi
+echo "   versão mais recente: $LATEST_VERSION"
+
+# --- versão instalada (se houver) --------------------------------------------
+INSTALLED_VERSION=""
+if dpkg-query -W -f='${Status}' discord 2>/dev/null | grep -q "install ok installed"; then
+    INSTALLED_VERSION="$(dpkg-query -W -f='${Version}' discord)"
+    echo "   versão instalada:   $INSTALLED_VERSION"
+else
+    echo "   Discord não está instalado."
+fi
+
+# --- compara e decide ---------------------------------------------------------
+if [[ "$INSTALLED_VERSION" == "$LATEST_VERSION" ]]; then
+    echo ":: Já está na versão mais recente. Nada a fazer."
+    exit 0
+fi
+
+# --- baixa o .deb -------------------------------------------------------------
+echo ":: Baixando Discord $LATEST_VERSION..."
+curl -fL --progress-bar -o "$TMP_DEB" "$DOWNLOAD_URL"
+
+# sanity check: o arquivo é mesmo um .deb?
+if ! file "$TMP_DEB" | grep -q "Debian binary package"; then
+    echo "Erro: o arquivo baixado não é um pacote .deb válido." >&2
+    exit 1
+fi
+
+# --- instala ------------------------------------------------------------------
+echo ":: Instalando..."
+if ! sudo dpkg -i "$TMP_DEB"; then
+    echo ":: Resolvendo dependências pendentes..."
+    sudo apt-get install -f -y
+fi
+
+echo ":: Pronto. Discord $LATEST_VERSION instalado."

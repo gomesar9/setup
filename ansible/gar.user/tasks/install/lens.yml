@@ -13,11 +13,20 @@
         group: root
       become: true
 
-    - name: "Download Lens GPG key"
-      ansible.builtin.get_url:
-        url: "https://downloads.k8slens.dev/keys/gpg"
-        dest: "/etc/apt/keyrings/lens.asc"
+    - name: "Baixar e dearmor da chave GPG do Lens"
+      ansible.builtin.shell:
+        cmd: >
+          curl -fsSL https://downloads.k8slens.dev/keys/gpg |
+          gpg --dearmor -o /usr/share/keyrings/lens-archive-keyring.gpg
+        creates: /usr/share/keyrings/lens-archive-keyring.gpg
+      become: true
+
+    - name: "Ajustar permissão da chave"
+      ansible.builtin.file:
+        path: /usr/share/keyrings/lens-archive-keyring.gpg
         mode: '0644'
+        owner: root
+        group: root
       become: true
 
     - name: "Add Lens repository with GPG key"
@@ -26,11 +35,13 @@
         types:
           - deb
         uris: "https://downloads.k8slens.dev/apt/debian"
+        architectures:
+          - amd64
         suites:
           - stable
         components:
           - main
-        signed_by: "/etc/apt/keyrings/lens.asc"
+        signed_by: "/usr/share/keyrings/lens-archive-keyring.gpg"
         state: present
       become: true
 

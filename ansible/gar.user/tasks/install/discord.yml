@@ -13,7 +13,7 @@
     - name: "Install Discord dependencies"
       ansible.builtin.apt:
         name:
-          - libasound2
+          # - libasound2
           - libnotify4
         state: present
         update_cache: true
