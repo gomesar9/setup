@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# TTS local via Piper. Recebe texto por arg ou stdin e reproduz no áudio padrão.
+# Pula blocos de código (```) se VOICE_TTS_SKIP_CODE=true (spec §8).
+set -euo pipefail
+
+PIPER_DIR="${VOICE_PIPER_DIR:-$HOME/.local/share/piper}"
+PIPER_BIN="${PIPER_DIR}/piper/piper"
+VOICE_MODEL="${VOICE_PIPER_VOICE:-pt_BR-faber-medium}"
+MODEL_PATH="${PIPER_DIR}/voices/${VOICE_MODEL}.onnx"
+SKIP_CODE="${VOICE_TTS_SKIP_CODE:-true}"
+
+if [[ $# -gt 0 ]]; then
+    text="$*"
+else
+    text="$(cat)"
+fi
+
+# Remove blocos de código cercados por ```
+if [[ "$SKIP_CODE" == "true" ]]; then
+    text="$(printf '%s' "$text" | awk '
+        /^[[:space:]]*```/ { incode = !incode; next }
+        !incode { print }
+    ')"
+fi
+
+[[ -z "${text//[[:space:]]/}" ]] && exit 0
+
+printf '%s' "$text" | "$PIPER_BIN" --model "$MODEL_PATH" --output-raw \
+    | aplay -r 22050 -f S16_LE -t raw -q -

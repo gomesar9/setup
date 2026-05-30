@@ -1,0 +1,48 @@
+---
+# Piper TTS local com voz pt-BR (spec §7.6).
+- name: "Piper | check installed binary"
+  ansible.builtin.stat:
+    path: "{{ piper_dir }}/piper/piper"
+  register: piper_bin
+
+- name: "Piper | install binary"
+  when: not piper_bin.stat.exists
+  block:
+    - name: "Piper | download release tarball"
+      ansible.builtin.get_url:
+        url: "https://github.com/rhasspy/piper/releases/download/{{ piper_version }}/piper_linux_x86_64.tar.gz"
+        dest: "{{ piper_dir }}/piper.tar.gz"
+        mode: "0644"
+
+    - name: "Piper | extract"
+      ansible.builtin.unarchive:
+        src: "{{ piper_dir }}/piper.tar.gz"
+        dest: "{{ piper_dir }}"
+        remote_src: true
+
+    - name: "Piper | remove tarball"
+      ansible.builtin.file:
+        path: "{{ piper_dir }}/piper.tar.gz"
+        state: absent
+
+- name: "Piper | ensure voices dir"
+  ansible.builtin.file:
+    path: "{{ piper_dir }}/voices"
+    state: directory
+    mode: "0755"
+
+- name: "Piper | download pt-BR voice files"
+  ansible.builtin.get_url:
+    url: "https://huggingface.co/rhasspy/piper-voices/resolve/main/pt/pt_BR/faber/medium/{{ item }}"
+    dest: "{{ piper_dir }}/voices/{{ item }}"
+    mode: "0644"
+    force: false
+  loop:
+    - "pt_BR-faber-medium.onnx"
+    - "pt_BR-faber-medium.onnx.json"
+
+- name: "Piper | install voice-speak script"
+  ansible.builtin.copy:
+    src: "home/user/local/bin/voice-speak"
+    dest: "{{ ansible_env.HOME }}/.local/bin/voice-speak"
+    mode: "0755"
