@@ -1,0 +1,11 @@
+---
+# Download do modelo Whisper multilíngue (spec §7.2 / §6).
+# Trocar whisper_model na vars/voice.yml baixa o modelo correspondente.
+- name: "Whisper model | download ggml-{{ whisper_model }}.bin"
+  ansible.builtin.get_url:
+    url: "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-{{ whisper_model }}.bin"
+    dest: "{{ whisper_model_dir }}/ggml-{{ whisper_model }}.bin"
+    mode: "0644"
+    # Idempotente: get_url não rebaixa se o destino já existe (sem checksum
+    # remoto disponível de forma estável; usar `force: false`).
+    force: false
