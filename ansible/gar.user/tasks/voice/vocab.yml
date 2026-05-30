@@ -1,0 +1,9 @@
+---
+# Vocabulário customizado (initial_prompt do whisper) — spec §5.1 / §7.5.
+# Instala um seed editável; NÃO sobrescreve edições do usuário (force: false).
+- name: "Vocab | install initial_prompt seed"
+  ansible.builtin.copy:
+    src: "home/user/config/voice-stack/vocab.txt"
+    dest: "{{ voice_vocab_path }}"
+    mode: "0644"
+    force: false
