@@ -1,0 +1,44 @@
+---
+# ──────────────────────────────────────────────────────────────────────────
+# Stack de ditado por voz local (voice-to-code) — variáveis centrais
+# Spec: plans/voice-dev-stack-spec.md (§5 idioma, §6 portabilidade CPU→GPU)
+# Para migrar p/ GPU (RTX 5070): trocar voice_device, whisper_model e
+# ollama_refine_model abaixo e re-rodar `ansync --tags voice`.
+# ──────────────────────────────────────────────────────────────────────────
+
+# Device / portabilidade CPU -> CUDA
+voice_device: "cpu" # cpu | cuda
+whisper_cpp_version: "v1.7.4" # tag fixada do whisper.cpp
+whisper_cuda_arch: "120" # RTX 5070 = Blackwell sm_120 (usado só em cuda)
+
+# Modelo STT — multilíngue (NÃO usar variantes .en, que são só inglês)
+whisper_model: "small" # cpu: small ; gpu: medium | large-v3
+whisper_language: "pt" # travado em pt (spec §5 — não usar auto)
+
+# Refino contextual via Ollama (já instalado pelo usuário — NÃO reinstalar)
+ollama_url: "http://localhost:11434"
+ollama_refine_model: "qwen2.5:3b" # cpu pequeno; gpu -> maior
+
+# Ativação
+voice_activation_mode: "push_to_talk" # push_to_talk | continuous
+voice_trigger_word_enabled: false
+voice_trigger_word: ""
+
+# TTS (saída por voz)
+piper_voice: "pt_BR-faber-medium"
+piper_version: "2023.11.14-2" # release do rhasspy/piper
+tts_skip_code_blocks: true
+
+# Atalho global (Cinnamon/X11)
+voice_hotkey: "<Super>v"
+
+# Caminhos (editáveis pelo usuário e versionáveis)
+voice_cfg_dir: "{{ ansible_env.HOME }}/.config/voice-stack"
+voice_vocab_path: "{{ ansible_env.HOME }}/.config/voice-stack/vocab.txt"
+voice_refine_prompt_path: "{{ ansible_env.HOME }}/.config/voice-stack/refine_prompt.txt"
+voice_data_dir: "{{ ansible_env.HOME }}/.local/share/voice-stack"
+voice_venv: "{{ ansible_env.HOME }}/.local/share/voice-stack/venv"
+voice_pidfile: "{{ ansible_env.HOME }}/.local/share/voice-stack/dispatcher.pid"
+whisper_src_dir: "{{ ansible_env.HOME }}/.local/share/voice-stack/whisper.cpp"
+whisper_model_dir: "{{ ansible_env.HOME }}/.local/share/whisper"
+piper_dir: "{{ ansible_env.HOME }}/.local/share/piper"

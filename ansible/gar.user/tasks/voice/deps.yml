@@ -1,0 +1,23 @@
+---
+# Dependências de sistema da stack de voz (spec §7.1).
+- name: "Voice deps | install system packages"
+  ansible.builtin.apt:
+    name:
+      - cmake # build do whisper.cpp
+      - build-essential # compiladores
+      - ffmpeg # conversão/decodificação de áudio
+      - xdotool # injeção de texto no X11 (spec §4)
+      - python3-venv # venv do daemon
+      - python3-pip
+      - portaudio19-dev # backend do sounddevice (captura de mic)
+      - libsdl2-dev # whisper-stream (captura SDL)
+      - alsa-utils # aplay (saída do Piper)
+      - git
+      - wget
+    state: present
+    update_cache: true
+  become: true
+
+# NOTA (GPU/RTX 5070): o usuário já gerencia o driver NVIDIA. Para CUDA é
+# necessário o CUDA Toolkit (>= 12.8 p/ Blackwell sm_120) instalado à parte;
+# não automatizado no v1. Ao definir voice_device=cuda, garanta nvcc no PATH.
