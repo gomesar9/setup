@@ -1,0 +1,41 @@
+---
+# Atalho global do Cinnamon (X11) que dispara o toggle da sessão (spec §7.8).
+# Usa o CLI `dconf` (sem depender da collection community.general).
+# Pulado fora do Cinnamon / sem DBus (ex.: container).
+- name: "Hotkey | detect dbus session"
+  ansible.builtin.stat:
+    path: "{{ ansible_env.XDG_RUNTIME_DIR | default('/run/user/' + (ansible_facts['user_uid'] | string)) }}/bus"
+  register: hk_dbus
+  changed_when: false
+
+- name: "Hotkey | check cinnamon + dconf present"
+  ansible.builtin.shell: "command -v cinnamon && command -v dconf"
+  register: hk_tools
+  failed_when: false
+  changed_when: false
+
+- name: "Hotkey | configure Cinnamon custom keybinding"
+  when: hk_dbus.stat.exists and hk_tools.rc == 0
+  vars:
+    base: "/org/cinnamon/desktop/keybindings/custom-keybindings/custom-voice"
+  block:
+    - name: "Hotkey | set keybinding fields"
+      ansible.builtin.command:
+        cmd: "dconf write {{ base }}/{{ item.k }} \"{{ item.v }}\""
+      loop:
+        - { k: "name", v: "'Voice dictation toggle'" }
+        - { k: "command", v: "'{{ ansible_env.HOME }}/.local/bin/voice-toggle'" }
+        - { k: "binding", v: "['{{ voice_hotkey }}']" }
+      loop_control:
+        label: "{{ item.k }}"
+      changed_when: true
+
+    - name: "Hotkey | register slot in custom-list"
+      ansible.builtin.command:
+        cmd: "dconf write /org/cinnamon/desktop/keybindings/custom-list \"['custom-voice']\""
+      changed_when: true
+
+- name: "Hotkey | manual note when skipped"
+  ansible.builtin.debug:
+    msg: "Cinnamon/DBus ausente — configure o atalho manualmente apontando p/ ~/.local/bin/voice-toggle ({{ voice_hotkey }})."
+  when: not (hk_dbus.stat.exists and hk_tools.rc == 0)
