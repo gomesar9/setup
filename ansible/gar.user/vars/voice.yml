@@ -11,6 +11,10 @@ voice_device: "cpu" # cpu | cuda
 whisper_cpp_version: "v1.7.4" # tag fixada do whisper.cpp
 whisper_cuda_arch: "120" # RTX 5070 = Blackwell sm_120 (usado só em cuda)
 
+# torch/torchaudio: par DEVE ser casado (mesma versão) senão a ABI do
+# _torchaudio.so quebra. silero-vad respeita o par já instalado.
+torch_version: "2.8.0"
+
 # Modelo STT — multilíngue (NÃO usar variantes .en, que são só inglês)
 whisper_model: "small" # cpu: small ; gpu: medium | large-v3
 whisper_language: "pt" # travado em pt (spec §5 — não usar auto)

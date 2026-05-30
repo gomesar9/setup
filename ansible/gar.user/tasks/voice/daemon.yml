@@ -5,11 +5,27 @@
     cmd: "python3 -m venv {{ voice_venv }}"
     creates: "{{ voice_venv }}/bin/python"
 
-- name: "Daemon | upgrade pip"
+- name: "Daemon | ensure pip tooling"
   ansible.builtin.pip:
     name: ["pip", "wheel", "setuptools"]
-    state: latest
+    state: present
     virtualenv: "{{ voice_venv }}"
+
+# torch + torchaudio são dependências do silero-vad. O wheel default do PyPI é
+# a build CUDA (enorme) e falha/OOM em máquina CPU. Instalamos os dois do índice
+# CPU juntos; assim o silero-vad não rebaixa/reinstala torchaudio do PyPI (o que
+# quebraria a ABI do _torchaudio.so) e a task fica idempotente.
+# Para GPU (RTX 5070): defina voice_device=cuda e instale os wheels CUDA à mão
+# (ver README), ex.: pip install torch torchaudio --index-url .../whl/cu124
+- name: "Daemon | install torch + torchaudio (CPU wheels)"
+  ansible.builtin.pip:
+    name:
+      - "torch=={{ torch_version }}"
+      - "torchaudio=={{ torch_version }}"
+    state: present
+    virtualenv: "{{ voice_venv }}"
+    extra_args: "--index-url https://download.pytorch.org/whl/cpu"
+  when: voice_device == "cpu"
 
 - name: "Daemon | install python deps"
   ansible.builtin.pip:
@@ -18,8 +34,6 @@
       - sounddevice # captura de áudio do mic
       - numpy
       - requests # cliente HTTP p/ Ollama
-      # torch é puxado pelo silero-vad; em CPU vem o wheel padrão.
-      # Para GPU, troque manualmente pelo wheel CUDA (ver README).
     state: present
     virtualenv: "{{ voice_venv }}"
 
