@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Liga/desliga a sessão de ditado enviando SIGUSR1 ao daemon.
+# Ligado a um atalho global do Cinnamon (ver tasks/voice/hotkey.yml).
+set -euo pipefail
+
+PIDFILE="${VOICE_PIDFILE:-$HOME/.local/share/voice-stack/dispatcher.pid}"
+
+if [[ ! -f "$PIDFILE" ]]; then
+    notify-send "Voice" "Daemon de ditado não está rodando" 2>/dev/null || true
+    echo "pidfile ausente: $PIDFILE" >&2
+    exit 1
+fi
+
+pid="$(cat "$PIDFILE")"
+if ! kill -0 "$pid" 2>/dev/null; then
+    notify-send "Voice" "Daemon morto (pid $pid)" 2>/dev/null || true
+    echo "processo $pid não existe" >&2
+    exit 1
+fi
+
+kill -USR1 "$pid"
+notify-send "Voice" "Ditado alternado" 2>/dev/null || true

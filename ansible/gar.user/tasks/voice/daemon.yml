@@ -1,0 +1,62 @@
+---
+# venv Python + daemon de ditado + serviço systemd --user (spec §7.3).
+- name: "Daemon | create virtualenv"
+  ansible.builtin.command:
+    cmd: "python3 -m venv {{ voice_venv }}"
+    creates: "{{ voice_venv }}/bin/python"
+
+- name: "Daemon | upgrade pip"
+  ansible.builtin.pip:
+    name: ["pip", "wheel", "setuptools"]
+    state: latest
+    virtualenv: "{{ voice_venv }}"
+
+- name: "Daemon | install python deps"
+  ansible.builtin.pip:
+    name:
+      - silero-vad # VAD (segmentação de fala)
+      - sounddevice # captura de áudio do mic
+      - numpy
+      - requests # cliente HTTP p/ Ollama
+      # torch é puxado pelo silero-vad; em CPU vem o wheel padrão.
+      # Para GPU, troque manualmente pelo wheel CUDA (ver README).
+    state: present
+    virtualenv: "{{ voice_venv }}"
+
+- name: "Daemon | install dispatcher + toggle scripts"
+  ansible.builtin.copy:
+    src: "home/user/local/bin/{{ item }}"
+    dest: "{{ ansible_env.HOME }}/.local/bin/{{ item }}"
+    mode: "0755"
+  loop:
+    - voice-dispatcher.py
+    - voice-toggle
+
+- name: "Daemon | ensure systemd user dir"
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/.config/systemd/user"
+    state: directory
+    mode: "0755"
+
+- name: "Daemon | install systemd --user unit"
+  ansible.builtin.template:
+    src: "home/user/.config/systemd/user/voice-dictation.service.j2"
+    dest: "{{ ansible_env.HOME }}/.config/systemd/user/voice-dictation.service"
+    mode: "0644"
+  register: voice_unit
+
+# Em container/CI não há bus de usuário; só mexe no systemd se houver.
+- name: "Daemon | detect user systemd bus"
+  ansible.builtin.stat:
+    path: "{{ ansible_env.XDG_RUNTIME_DIR | default('/run/user/' + (ansible_facts['user_uid'] | string)) }}/bus"
+  register: user_dbus
+  changed_when: false
+
+- name: "Daemon | enable + (re)start service"
+  ansible.builtin.systemd:
+    name: voice-dictation.service
+    scope: user
+    daemon_reload: true
+    enabled: true
+    state: "{{ 'restarted' if voice_unit is changed else 'started' }}"
+  when: user_dbus.stat.exists

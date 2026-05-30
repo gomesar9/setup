@@ -1,0 +1,24 @@
+[Unit]
+Description=Voice-to-code dictation daemon (local STT -> xdotool)
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart={{ voice_venv }}/bin/python {{ ansible_env.HOME }}/.local/bin/voice-dispatcher.py
+Restart=on-failure
+RestartSec=3
+Environment=VOICE_WHISPER_BIN=/usr/local/bin/whisper-cli
+Environment=VOICE_WHISPER_MODEL={{ whisper_model_dir }}/ggml-{{ whisper_model }}.bin
+Environment=VOICE_LANGUAGE={{ whisper_language }}
+Environment=VOICE_VOCAB_PATH={{ voice_vocab_path }}
+Environment=VOICE_REFINE_PROMPT_PATH={{ voice_refine_prompt_path }}
+Environment=VOICE_OLLAMA_URL={{ ollama_url }}
+Environment=VOICE_OLLAMA_MODEL={{ ollama_refine_model }}
+Environment=VOICE_ACTIVATION={{ voice_activation_mode }}
+Environment=VOICE_TRIGGER_ENABLED={{ voice_trigger_word_enabled | lower }}
+Environment=VOICE_TRIGGER_WORD={{ voice_trigger_word }}
+Environment=VOICE_PIDFILE={{ voice_pidfile }}
+
+[Install]
+WantedBy=graphical-session.target
