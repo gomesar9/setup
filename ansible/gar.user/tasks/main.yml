@@ -20,9 +20,11 @@
     mode: "600"
     directory_mode: "700"
   loop:
+    - { src: config/autostart, dest: "{{ ansible_facts['user_id'] }}/.config" }
     - { src: config/bash, dest: "{{ ansible_facts['user_id'] }}/.config" }
     - { src: config/fontconfig, dest: "{{ ansible_facts['user_id'] }}/.config" }
     - { src: config/git, dest: "{{ ansible_facts['user_id'] }}/.config" }
+    - { src: config/guake, dest: "{{ ansible_facts['user_id'] }}/.config" }
     - { src: config/npm, dest: "{{ ansible_facts['user_id'] }}/.config" }
     - { src: config/nvim, dest: "{{ ansible_facts['user_id'] }}/.config" }
     - { src: config/eza, dest: "{{ ansible_facts['user_id'] }}/.config" }
@@ -131,6 +133,9 @@
 - name: Config NVM
   include_tasks: config/nvm.yml
 
+- name: Install oh-my-zsh
+  include_tasks: install/ohmyzsh.yml
+
 - name: Install Golang
   include_tasks: install/go.yml
 
@@ -139,6 +144,14 @@
 
 - name: Install Lens
   include_tasks: install/lens.yml
+
+- name: Install Nerd Fonts
+  include_tasks: install/nerdfonts.yml
+
+# Stack de ditado por voz local (spec: plans/voice-dev-stack-spec.md)
+- name: Voice-to-code dictation stack
+  include_tasks: voice/main.yml
+  tags: [voice]
 
 - name: User config
   user:
