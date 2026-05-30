@@ -1,0 +1,53 @@
+---
+# Integração com Claude Code: hook de saída -> Piper TTS (spec §7.7).
+# ⚠️ O schema de hooks do Claude Code muda com frequência (spec §9). Este wire
+# usa o evento "Stop" (settings.json -> hooks.Stop[].hooks[].command), que
+# recebe JSON em stdin com transcript_path. Verifique a doc vigente se quebrar.
+- name: "Claude hook | install TTS hook script"
+  ansible.builtin.copy:
+    src: "home/user/local/bin/voice-claude-tts-hook.sh"
+    dest: "{{ ansible_env.HOME }}/.local/bin/voice-claude-tts-hook.sh"
+    mode: "0755"
+
+- name: "Claude hook | ensure ~/.claude exists"
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/.claude"
+    state: directory
+    mode: "0755"
+
+- name: "Claude hook | read existing settings.json"
+  ansible.builtin.slurp:
+    src: "{{ ansible_env.HOME }}/.claude/settings.json"
+  register: claude_settings_raw
+  failed_when: false
+  changed_when: false
+
+- name: "Claude hook | parse settings (default empty)"
+  ansible.builtin.set_fact:
+    claude_settings: "{{ (claude_settings_raw.content | b64decode | from_json)
+      if (claude_settings_raw.content is defined) else {} }}"
+
+- name: "Claude hook | build Stop hook entry"
+  ansible.builtin.set_fact:
+    voice_stop_hook:
+      hooks:
+        - type: "command"
+          command: "{{ ansible_env.HOME }}/.local/bin/voice-claude-tts-hook.sh"
+
+- name: "Claude hook | merge Stop hook idempotently"
+  ansible.builtin.set_fact:
+    claude_settings_new: >-
+      {{ claude_settings | combine({'hooks':
+        (claude_settings.hooks | default({}) | combine({'Stop': [voice_stop_hook]}))
+      }, recursive=true) }}
+  when: >-
+    (claude_settings.hooks.Stop | default([]) | map(attribute='hooks') | flatten
+     | selectattr('command', 'defined')
+     | selectattr('command', 'search', 'voice-claude-tts-hook') | list | length) == 0
+
+- name: "Claude hook | write settings.json"
+  ansible.builtin.copy:
+    content: "{{ claude_settings_new | to_nice_json }}\n"
+    dest: "{{ ansible_env.HOME }}/.claude/settings.json"
+    mode: "0644"
+  when: claude_settings_new is defined
