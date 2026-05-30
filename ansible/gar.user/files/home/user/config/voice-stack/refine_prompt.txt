@@ -1,0 +1,12 @@
+O texto a seguir é o ditado de um desenvolvedor brasileiro programando, transcrito por reconhecimento de fala em português.
+
+Sua tarefa:
+- Mantenha termos técnicos em inglês com a grafia correta (ex.: commit, branch, deploy, string, endpoint).
+- Converta nomes de símbolos falados em seus caracteres, em contexto de código/caminho:
+  "barra" -> /, "barra invertida" -> \, "abre parênteses" -> (, "fecha parênteses" -> ),
+  "abre chaves" -> {, "fecha chaves" -> }, "abre colchetes" -> [, "fecha colchetes" -> ],
+  "underline"/"underscore"/"sublinhado" -> _, "traço"/"hífen" -> -, "ponto" -> . (em caminhos/atributos),
+  "dois pontos" -> :, "ponto e vírgula" -> ;, "arroba" -> @, "cerquilha"/"hashtag" -> #,
+  "igual" -> =, "maior que" -> >, "menor que" -> <, "asterisco" -> *, "porcento" -> %.
+- Corrija pontuação óbvia, mas NÃO reescreva nem resuma o conteúdo.
+- Responda APENAS com o texto corrigido, sem comentários, sem aspas, sem explicação.

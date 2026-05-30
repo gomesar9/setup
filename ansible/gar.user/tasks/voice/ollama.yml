@@ -1,0 +1,36 @@
+---
+# Refino contextual via Ollama (spec §7.4). NÃO instala o Ollama — o usuário já
+# o gerencia. Garante o modelo de refino e o template de prompt editável.
+- name: "Ollama | check service reachable"
+  ansible.builtin.uri:
+    url: "{{ ollama_url }}/api/tags"
+    method: GET
+    status_code: [200]
+  register: ollama_tags
+  failed_when: false
+  changed_when: false
+
+- name: "Ollama | warn if unreachable"
+  ansible.builtin.debug:
+    msg: "Ollama não respondeu em {{ ollama_url }} — pulando pull do modelo. Suba o Ollama e rode `ansync --tags ollama`."
+  when: ollama_tags.status is not defined or ollama_tags.status != 200
+
+- name: "Ollama | ensure refine model present"
+  when: ollama_tags.status is defined and ollama_tags.status == 200
+  block:
+    - name: "Ollama | check if {{ ollama_refine_model }} already pulled"
+      ansible.builtin.command: "ollama list"
+      register: ollama_list
+      changed_when: false
+
+    - name: "Ollama | pull {{ ollama_refine_model }}"
+      ansible.builtin.command: "ollama pull {{ ollama_refine_model }}"
+      when: ollama_refine_model.split(':')[0] not in ollama_list.stdout
+      changed_when: true
+
+- name: "Ollama | install editable refinement prompt"
+  ansible.builtin.copy:
+    src: "home/user/config/voice-stack/refine_prompt.txt"
+    dest: "{{ voice_refine_prompt_path }}"
+    mode: "0644"
+    force: false
