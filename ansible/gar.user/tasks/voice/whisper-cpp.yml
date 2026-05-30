@@ -44,12 +44,12 @@
         chdir: "{{ whisper_src_dir }}"
       changed_when: true
 
-    - name: "whisper.cpp | install binaries"
+    # Apenas whisper-cli: o dispatcher faz captura + VAD em Python e chama
+    # whisper-cli por segmento. O exemplo `whisper-stream` (que exigiria
+    # -DWHISPER_SDL2=ON) não é usado.
+    - name: "whisper.cpp | install binary"
       ansible.builtin.command:
-        cmd: "install -Dm755 {{ whisper_src_dir }}/build/bin/{{ item }} /usr/local/bin/{{ item }}"
-      loop:
-        - whisper-cli
-        - whisper-stream
+        cmd: "install -Dm755 {{ whisper_src_dir }}/build/bin/whisper-cli /usr/local/bin/whisper-cli"
       changed_when: true
       become: true
 

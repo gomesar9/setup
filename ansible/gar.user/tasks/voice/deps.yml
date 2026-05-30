@@ -10,7 +10,6 @@
       - python3-venv # venv do daemon
       - python3-pip
       - portaudio19-dev # backend do sounddevice (captura de mic)
-      - libsdl2-dev # whisper-stream (captura SDL)
       - alsa-utils # aplay (saída do Piper)
       - git
       - wget
