@@ -1,0 +1,65 @@
+---
+# Build idempotente do whisper.cpp a partir do fonte (spec §7.2).
+# Recompila apenas quando muda versão/device/arch (marker de build), atendendo
+# ao requisito de portabilidade CPU->CUDA por variável (spec §6).
+- name: "whisper.cpp | clone/checkout {{ whisper_cpp_version }}"
+  ansible.builtin.git:
+    repo: "https://github.com/ggml-org/whisper.cpp"
+    dest: "{{ whisper_src_dir }}"
+    version: "{{ whisper_cpp_version }}"
+    depth: 1
+  register: whisper_git
+
+- name: "whisper.cpp | compute desired build id"
+  ansible.builtin.set_fact:
+    whisper_build_id: "{{ whisper_cpp_version }}-{{ voice_device }}-{{ whisper_cuda_arch if voice_device == 'cuda' else 'na' }}"
+
+- name: "whisper.cpp | read previous build id"
+  ansible.builtin.slurp:
+    src: "{{ voice_data_dir }}/.whisper_build_id"
+  register: whisper_prev_build
+  failed_when: false
+  changed_when: false
+
+- name: "whisper.cpp | decide rebuild"
+  ansible.builtin.set_fact:
+    whisper_need_build: "{{ (whisper_prev_build.content is not defined) or
+      ((whisper_prev_build.content | b64decode | trim) != whisper_build_id) or
+      (whisper_git is changed) }}"
+
+- name: "whisper.cpp | build"
+  when: whisper_need_build | bool
+  block:
+    - name: "whisper.cpp | cmake configure"
+      ansible.builtin.command:
+        cmd: >-
+          cmake -B build -DCMAKE_BUILD_TYPE=Release
+          {% if voice_device == 'cuda' %}-DGGML_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES={{ whisper_cuda_arch }}{% endif %}
+        chdir: "{{ whisper_src_dir }}"
+      changed_when: true
+
+    - name: "whisper.cpp | cmake build"
+      ansible.builtin.command:
+        cmd: "cmake --build build -j --config Release"
+        chdir: "{{ whisper_src_dir }}"
+      changed_when: true
+
+    - name: "whisper.cpp | install binaries"
+      ansible.builtin.command:
+        cmd: "install -Dm755 {{ whisper_src_dir }}/build/bin/{{ item }} /usr/local/bin/{{ item }}"
+      loop:
+        - whisper-cli
+        - whisper-stream
+      changed_when: true
+      become: true
+
+    - name: "whisper.cpp | persist build id"
+      ansible.builtin.copy:
+        content: "{{ whisper_build_id }}\n"
+        dest: "{{ voice_data_dir }}/.whisper_build_id"
+        mode: "0644"
+
+- name: "whisper.cpp | up to date"
+  ansible.builtin.debug:
+    msg: "whisper.cpp já compilado para {{ whisper_build_id }}."
+  when: not (whisper_need_build | bool)
