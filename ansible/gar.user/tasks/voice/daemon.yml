@@ -24,7 +24,9 @@
       - "torchaudio=={{ torch_version }}"
     state: present
     virtualenv: "{{ voice_venv }}"
-    extra_args: "--index-url https://download.pytorch.org/whl/cpu"
+    # index pytorch p/ os wheels +cpu; extra pypi resolve deps puras (ex.
+    # typing-extensions), que o índice pytorch serve com metadata inconsistente.
+    extra_args: "--index-url https://download.pytorch.org/whl/cpu --extra-index-url https://pypi.org/simple"
   when: voice_device == "cpu"
 
 - name: "Daemon | install python deps"
