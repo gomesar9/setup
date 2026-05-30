@@ -1,6 +1,10 @@
 ---
 # Orquestrador da stack de ditado por voz local.
 # Incluído por tasks/main.yml. Rode isolado com: ansync --tags voice
+#
+# NOTA: include_tasks NÃO propaga as tags da diretiva para as tasks incluídas.
+# Por isso usamos `apply: tags:` em cada include, senão sob `--tags voice` os
+# includes rodariam mas as tasks internas (sem tag) seriam puladas.
 - name: "Voice | load variables"
   ansible.builtin.include_vars: "{{ role_path }}/vars/voice.yml"
   tags: [voice]
@@ -19,37 +23,64 @@
   tags: [voice]
 
 - name: "Voice | system dependencies (apt)"
-  ansible.builtin.include_tasks: deps.yml
+  ansible.builtin.include_tasks:
+    file: deps.yml
+    apply:
+      tags: [voice, install, apt]
   tags: [voice, install, apt]
 
 - name: "Voice | build whisper.cpp"
-  ansible.builtin.include_tasks: whisper-cpp.yml
+  ansible.builtin.include_tasks:
+    file: whisper-cpp.yml
+    apply:
+      tags: [voice, install, whisper]
   tags: [voice, install, whisper]
 
 - name: "Voice | download Whisper model"
-  ansible.builtin.include_tasks: model.yml
+  ansible.builtin.include_tasks:
+    file: model.yml
+    apply:
+      tags: [voice, model]
   tags: [voice, model]
 
 - name: "Voice | custom vocabulary (initial_prompt)"
-  ansible.builtin.include_tasks: vocab.yml
+  ansible.builtin.include_tasks:
+    file: vocab.yml
+    apply:
+      tags: [voice, vocab]
   tags: [voice, vocab]
 
 - name: "Voice | Ollama refinement model + prompt"
-  ansible.builtin.include_tasks: ollama.yml
+  ansible.builtin.include_tasks:
+    file: ollama.yml
+    apply:
+      tags: [voice, ollama]
   tags: [voice, ollama]
 
 - name: "Voice | Python venv + dictation daemon"
-  ansible.builtin.include_tasks: daemon.yml
+  ansible.builtin.include_tasks:
+    file: daemon.yml
+    apply:
+      tags: [voice, venv, daemon]
   tags: [voice, venv, daemon]
 
 - name: "Voice | Piper TTS"
-  ansible.builtin.include_tasks: piper.yml
+  ansible.builtin.include_tasks:
+    file: piper.yml
+    apply:
+      tags: [voice, install, tts]
   tags: [voice, install, tts]
 
 - name: "Voice | Claude Code TTS hook"
-  ansible.builtin.include_tasks: claude-hook.yml
+  ansible.builtin.include_tasks:
+    file: claude-hook.yml
+    apply:
+      tags: [voice, hook]
   tags: [voice, hook]
 
 - name: "Voice | Cinnamon global hotkey"
-  ansible.builtin.include_tasks: hotkey.yml
+  ansible.builtin.include_tasks:
+    file: hotkey.yml
+    apply:
+      tags: [voice, hotkey]
   tags: [voice, hotkey]
