@@ -15,7 +15,7 @@
     state: directory
     mode: "0755"
   loop:
-    - "{{ ansible_env.HOME }}/.local/bin"
+    - "{{ ansible_facts['env']['HOME'] }}/.local/bin"
     - "{{ voice_cfg_dir }}"
     - "{{ voice_data_dir }}"
     - "{{ whisper_model_dir }}"
@@ -49,6 +49,13 @@
     apply:
       tags: [voice, vocab]
   tags: [voice, vocab]
+
+- name: "Voice | install Ollama + systemd service"
+  ansible.builtin.include_tasks:
+    file: ollama-install.yml
+    apply:
+      tags: [voice, ollama, install, ollama-install]
+  tags: [voice, ollama, install, ollama-install]
 
 - name: "Voice | Ollama refinement model + prompt"
   ansible.builtin.include_tasks:

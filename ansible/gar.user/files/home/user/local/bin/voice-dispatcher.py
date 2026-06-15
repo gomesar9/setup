@@ -12,6 +12,7 @@ ambiente, injetadas pela unit systemd (ver voice-dictation.service.j2).
 
 import os
 import queue
+import re
 import signal
 import subprocess
 import sys
@@ -42,6 +43,7 @@ CFG = {
         "~/.config/voice-stack/refine_prompt.txt")),
     "ollama_url": env("VOICE_OLLAMA_URL", "http://localhost:11434"),
     "ollama_model": env("VOICE_OLLAMA_MODEL", "qwen2.5:3b"),
+    "ollama_num_ctx": int(env("VOICE_OLLAMA_NUM_CTX", "4096")),
     "activation": env("VOICE_ACTIVATION", "push_to_talk"),
     "trigger_enabled": env("VOICE_TRIGGER_ENABLED", "false").lower() == "true",
     "trigger_word": env("VOICE_TRIGGER_WORD", "").strip().lower(),
@@ -103,23 +105,55 @@ def transcribe(samples: np.ndarray) -> str:
             pass
 
 
+# Limpeza da saída de modelos de raciocínio híbrido (ex.: qwen3), que podem
+# emitir blocos <think>...</think> e/ou tokens de controle de modo (/think,
+# /no_think). Removemos tudo isso para sobrar só o texto refinado.
+_THINK_BLOCK = re.compile(r"<think>.*?</think>", re.DOTALL | re.IGNORECASE)
+_CTRL_TOKEN = re.compile(r"/(?:no_)?think", re.IGNORECASE)
+
+
+def strip_reasoning(s: str) -> str:
+    s = _THINK_BLOCK.sub("", s)
+    s = _CTRL_TOKEN.sub("", s)
+    s = s.strip()
+    # remove só um par de aspas que envolva TODO o texto (não aspas internas de
+    # código, ex.: git commit -m "fix")
+    if len(s) >= 2 and s[0] == s[-1] and s[0] in "\"'":
+        s = s[1:-1].strip()
+    return s
+
+
 def refine(text: str) -> str:
-    """Refina a transcrição via Ollama (símbolos falados -> caracteres)."""
-    prompt_tmpl = read_file(CFG["refine_prompt_path"])
-    if not prompt_tmpl:
+    """Refina a transcrição via Ollama (símbolos falados -> caracteres).
+
+    Harness: usa /api/chat com papéis system+user (separa instrução do conteúdo),
+    desliga o raciocínio de modelos híbridos via soft-switch `/no_think` (sem o
+    parâmetro `think` da API, que dá 400 em modelos sem reasoning como qwen2.5),
+    força edição determinística (temperature 0) e sanitiza a saída.
+    """
+    sys_prompt = read_file(CFG["refine_prompt_path"])
+    if not sys_prompt:
         return text
     try:
         resp = requests.post(
-            f"{CFG['ollama_url']}/api/generate",
+            f"{CFG['ollama_url']}/api/chat",
             json={
                 "model": CFG["ollama_model"],
-                "prompt": f"{prompt_tmpl}\n\nTexto:\n{text}",
+                "messages": [
+                    {"role": "system", "content": f"{sys_prompt}\n/no_think"},
+                    {"role": "user", "content": text},
+                ],
                 "stream": False,
+                "options": {
+                    "num_ctx": CFG["ollama_num_ctx"],
+                    "temperature": 0,
+                },
             },
             timeout=60,
         )
         resp.raise_for_status()
-        return resp.json().get("response", text).strip() or text
+        out = resp.json().get("message", {}).get("content", "")
+        return strip_reasoning(out) or text
     except requests.RequestException as exc:
         log("ollama indisponível, usando texto cru:", exc)
         return text

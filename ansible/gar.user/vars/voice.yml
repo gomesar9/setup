@@ -7,21 +7,28 @@
 # ──────────────────────────────────────────────────────────────────────────
 
 # Device / portabilidade CPU -> CUDA
-voice_device: "cpu" # cpu | cuda
+voice_device: "cuda" # cpu | cuda
 whisper_cpp_version: "v1.7.4" # tag fixada do whisper.cpp
-whisper_cuda_arch: "120" # RTX 5070 = Blackwell sm_120 (usado só em cuda)
+whisper_cuda_arch: "120" # RTX 5070 Ti = Blackwell sm_120 (usado só em cuda)
+
+# CUDA Toolkit — instalado via repo apt NVIDIA só quando voice_device=cuda.
+# distro do repo: Mint 22.x = noble = ubuntu2404 ; jammy = ubuntu2204.
+cuda_repo_distro: "ubuntu2404"
+cuda_keyring_version: "1.1-1"
+cuda_toolkit_package: "cuda-toolkit-12-8" # 1ª versão com sm_120; driver-free (não mexe no driver)
 
 # torch/torchaudio: par DEVE ser casado (mesma versão) senão a ABI do
 # _torchaudio.so quebra. silero-vad respeita o par já instalado.
 torch_version: "2.8.0"
 
 # Modelo STT — multilíngue (NÃO usar variantes .en, que são só inglês)
-whisper_model: "small" # cpu: small ; gpu: medium | large-v3
+whisper_model: "large-v3" # cpu: small ; gpu: medium | large-v3
 whisper_language: "pt" # travado em pt (spec §5 — não usar auto)
 
 # Refino contextual via Ollama (já instalado pelo usuário — NÃO reinstalar)
 ollama_url: "http://localhost:11434"
-ollama_refine_model: "qwen2.5:3b" # cpu pequeno; gpu -> maior
+ollama_refine_model: "qwen3:8b" # gpu: qwen3:8b ; futuro -> qwen3:14b (só trocar aqui)
+ollama_num_ctx: 4096 # janela de contexto do refino
 
 # Ativação
 voice_activation_mode: "push_to_talk" # push_to_talk | continuous
@@ -37,12 +44,12 @@ tts_skip_code_blocks: true
 voice_hotkey: "<Super>v"
 
 # Caminhos (editáveis pelo usuário e versionáveis)
-voice_cfg_dir: "{{ ansible_env.HOME }}/.config/voice-stack"
-voice_vocab_path: "{{ ansible_env.HOME }}/.config/voice-stack/vocab.txt"
-voice_refine_prompt_path: "{{ ansible_env.HOME }}/.config/voice-stack/refine_prompt.txt"
-voice_data_dir: "{{ ansible_env.HOME }}/.local/share/voice-stack"
-voice_venv: "{{ ansible_env.HOME }}/.local/share/voice-stack/venv"
-voice_pidfile: "{{ ansible_env.HOME }}/.local/share/voice-stack/dispatcher.pid"
-whisper_src_dir: "{{ ansible_env.HOME }}/.local/share/voice-stack/whisper.cpp"
-whisper_model_dir: "{{ ansible_env.HOME }}/.local/share/whisper"
-piper_dir: "{{ ansible_env.HOME }}/.local/share/piper"
+voice_cfg_dir: "{{ ansible_facts['env']['HOME'] }}/.config/voice-stack"
+voice_vocab_path: "{{ ansible_facts['env']['HOME'] }}/.config/voice-stack/vocab.txt"
+voice_refine_prompt_path: "{{ ansible_facts['env']['HOME'] }}/.config/voice-stack/refine_prompt.txt"
+voice_data_dir: "{{ ansible_facts['env']['HOME'] }}/.local/share/voice-stack"
+voice_venv: "{{ ansible_facts['env']['HOME'] }}/.local/share/voice-stack/venv"
+voice_pidfile: "{{ ansible_facts['env']['HOME'] }}/.local/share/voice-stack/dispatcher.pid"
+whisper_src_dir: "{{ ansible_facts['env']['HOME'] }}/.local/share/voice-stack/whisper.cpp"
+whisper_model_dir: "{{ ansible_facts['env']['HOME'] }}/.local/share/whisper"
+piper_dir: "{{ ansible_facts['env']['HOME'] }}/.local/share/piper"

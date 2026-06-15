@@ -6,18 +6,18 @@
 - name: "Claude hook | install TTS hook script"
   ansible.builtin.copy:
     src: "home/user/local/bin/voice-claude-tts-hook.sh"
-    dest: "{{ ansible_env.HOME }}/.local/bin/voice-claude-tts-hook.sh"
+    dest: "{{ ansible_facts['env']['HOME'] }}/.local/bin/voice-claude-tts-hook.sh"
     mode: "0755"
 
 - name: "Claude hook | ensure ~/.claude exists"
   ansible.builtin.file:
-    path: "{{ ansible_env.HOME }}/.claude"
+    path: "{{ ansible_facts['env']['HOME'] }}/.claude"
     state: directory
     mode: "0755"
 
 - name: "Claude hook | read existing settings.json"
   ansible.builtin.slurp:
-    src: "{{ ansible_env.HOME }}/.claude/settings.json"
+    src: "{{ ansible_facts['env']['HOME'] }}/.claude/settings.json"
   register: claude_settings_raw
   failed_when: false
   changed_when: false
@@ -32,7 +32,7 @@
     voice_stop_hook:
       hooks:
         - type: "command"
-          command: "{{ ansible_env.HOME }}/.local/bin/voice-claude-tts-hook.sh"
+          command: "{{ ansible_facts['env']['HOME'] }}/.local/bin/voice-claude-tts-hook.sh"
 
 - name: "Claude hook | merge Stop hook idempotently"
   ansible.builtin.set_fact:
@@ -48,6 +48,6 @@
 - name: "Claude hook | write settings.json"
   ansible.builtin.copy:
     content: "{{ claude_settings_new | to_nice_json }}\n"
-    dest: "{{ ansible_env.HOME }}/.claude/settings.json"
+    dest: "{{ ansible_facts['env']['HOME'] }}/.claude/settings.json"
     mode: "0644"
   when: claude_settings_new is defined

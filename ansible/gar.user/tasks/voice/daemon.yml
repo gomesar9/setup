@@ -42,7 +42,7 @@
 - name: "Daemon | install dispatcher + toggle scripts"
   ansible.builtin.copy:
     src: "home/user/local/bin/{{ item }}"
-    dest: "{{ ansible_env.HOME }}/.local/bin/{{ item }}"
+    dest: "{{ ansible_facts['env']['HOME'] }}/.local/bin/{{ item }}"
     mode: "0755"
   loop:
     - voice-dispatcher.py
@@ -50,21 +50,21 @@
 
 - name: "Daemon | ensure systemd user dir"
   ansible.builtin.file:
-    path: "{{ ansible_env.HOME }}/.config/systemd/user"
+    path: "{{ ansible_facts['env']['HOME'] }}/.config/systemd/user"
     state: directory
     mode: "0755"
 
 - name: "Daemon | install systemd --user unit"
   ansible.builtin.template:
     src: "home/user/.config/systemd/user/voice-dictation.service.j2"
-    dest: "{{ ansible_env.HOME }}/.config/systemd/user/voice-dictation.service"
+    dest: "{{ ansible_facts['env']['HOME'] }}/.config/systemd/user/voice-dictation.service"
     mode: "0644"
   register: voice_unit
 
 # Em container/CI não há bus de usuário; só mexe no systemd se houver.
 - name: "Daemon | detect user systemd bus"
   ansible.builtin.stat:
-    path: "{{ ansible_env.XDG_RUNTIME_DIR | default('/run/user/' + (ansible_facts['user_uid'] | string)) }}/bus"
+    path: "{{ ansible_facts['env']['XDG_RUNTIME_DIR'] | default('/run/user/' + (ansible_facts['user_uid'] | string)) }}/bus"
   register: user_dbus
   changed_when: false
 

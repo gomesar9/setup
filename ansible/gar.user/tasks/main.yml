@@ -117,9 +117,10 @@
   include_tasks: install/kubectl.yml
 
 - name: Install Terraform
-  include_tasks: install/terraform.yml
-  apply:
-    tags: [iac, install]
+  include_tasks:
+    file: install/terraform.yml
+    apply:
+      tags: [iac, install]
   tags: [iac, install]
 
 - name: Install Luarocks
@@ -157,7 +158,7 @@
 # Stack de ditado por voz local (spec: plans/voice-dev-stack-spec.md)
 - name: Voice-to-code dictation stack
   include_tasks: voice/main.yml
-  tags: [voice]
+  tags: [voice, ollama-install]
 
 - name: User config
   user:

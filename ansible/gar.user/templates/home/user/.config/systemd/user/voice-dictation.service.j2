@@ -5,7 +5,7 @@ PartOf=graphical-session.target
 
 [Service]
 Type=simple
-ExecStart={{ voice_venv }}/bin/python {{ ansible_env.HOME }}/.local/bin/voice-dispatcher.py
+ExecStart={{ voice_venv }}/bin/python {{ ansible_facts['env']['HOME'] }}/.local/bin/voice-dispatcher.py
 Restart=on-failure
 RestartSec=3
 Environment=VOICE_WHISPER_BIN=/usr/local/bin/whisper-cli
@@ -15,6 +15,7 @@ Environment=VOICE_VOCAB_PATH={{ voice_vocab_path }}
 Environment=VOICE_REFINE_PROMPT_PATH={{ voice_refine_prompt_path }}
 Environment=VOICE_OLLAMA_URL={{ ollama_url }}
 Environment=VOICE_OLLAMA_MODEL={{ ollama_refine_model }}
+Environment=VOICE_OLLAMA_NUM_CTX={{ ollama_num_ctx }}
 Environment=VOICE_ACTIVATION={{ voice_activation_mode }}
 Environment=VOICE_TRIGGER_ENABLED={{ voice_trigger_word_enabled | lower }}
 Environment=VOICE_TRIGGER_WORD={{ voice_trigger_word }}

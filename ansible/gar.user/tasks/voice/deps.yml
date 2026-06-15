@@ -17,6 +17,30 @@
     update_cache: true
   become: true
 
-# NOTA (GPU/RTX 5070): o usuário já gerencia o driver NVIDIA. Para CUDA é
-# necessário o CUDA Toolkit (>= 12.8 p/ Blackwell sm_120) instalado à parte;
-# não automatizado no v1. Ao definir voice_device=cuda, garanta nvcc no PATH.
+# CUDA Toolkit (só quando voice_device=cuda). O driver NVIDIA é gerido pelo
+# usuário; aqui instalamos só o toolkit (nvcc + libs) via repo apt oficial.
+# Usamos o metapackage `cuda-toolkit-*` (driver-free) para não tocar no driver.
+- name: "Voice deps | CUDA toolkit (gpu)"
+  when: voice_device == "cuda"
+  become: true
+  block:
+    - name: "CUDA | download NVIDIA repo keyring"
+      ansible.builtin.get_url:
+        url: "https://developer.download.nvidia.com/compute/cuda/repos/{{ cuda_repo_distro }}/x86_64/cuda-keyring_{{ cuda_keyring_version }}_all.deb"
+        dest: "/tmp/cuda-keyring_{{ cuda_keyring_version }}_all.deb"
+        mode: "0644"
+
+    - name: "CUDA | install repo keyring (adds apt source + key)"
+      ansible.builtin.apt:
+        deb: "/tmp/cuda-keyring_{{ cuda_keyring_version }}_all.deb"
+
+    - name: "CUDA | install {{ cuda_toolkit_package }}"
+      ansible.builtin.apt:
+        name: "{{ cuda_toolkit_package }}"
+        state: present
+        update_cache: true
+
+    - name: "CUDA | ensure /usr/local/cuda symlink -> newest toolkit"
+      ansible.builtin.shell:
+        cmd: 'ln -sfn "$(ls -d /usr/local/cuda-* | sort -V | tail -1)" /usr/local/cuda'
+      changed_when: false

@@ -4,7 +4,7 @@
 # Pulado fora do Cinnamon / sem DBus (ex.: container).
 - name: "Hotkey | detect dbus session"
   ansible.builtin.stat:
-    path: "{{ ansible_env.XDG_RUNTIME_DIR | default('/run/user/' + (ansible_facts['user_uid'] | string)) }}/bus"
+    path: "{{ ansible_facts['env']['XDG_RUNTIME_DIR'] | default('/run/user/' + (ansible_facts['user_uid'] | string)) }}/bus"
   register: hk_dbus
   changed_when: false
 
@@ -24,7 +24,7 @@
         cmd: "dconf write {{ base }}/{{ item.k }} \"{{ item.v }}\""
       loop:
         - { k: "name", v: "'Voice dictation toggle'" }
-        - { k: "command", v: "'{{ ansible_env.HOME }}/.local/bin/voice-toggle'" }
+        - { k: "command", v: "'{{ ansible_facts['env']['HOME'] }}/.local/bin/voice-toggle'" }
         - { k: "binding", v: "['{{ voice_hotkey }}']" }
       loop_control:
         label: "{{ item.k }}"

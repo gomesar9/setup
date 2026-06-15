@@ -29,6 +29,11 @@
 
 - name: "whisper.cpp | build"
   when: whisper_need_build | bool
+  # Em cuda, expõe o nvcc/libs do toolkit ao cmake (instalado em /usr/local/cuda
+  # pela task de deps). Em cpu o dir não existe e é simplesmente ignorado.
+  environment:
+    PATH: "/usr/local/cuda/bin:{{ ansible_facts['env']['PATH'] }}"
+    CUDAToolkit_ROOT: "/usr/local/cuda"
   block:
     - name: "whisper.cpp | cmake configure"
       ansible.builtin.command:

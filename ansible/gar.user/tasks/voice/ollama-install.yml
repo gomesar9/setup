@@ -1,0 +1,25 @@
+---
+# Instalação do Ollama + serviço systemd (spec §7.4). Usa o script oficial, que
+# instala o binário em /usr/local/bin e cria/habilita /etc/systemd/system/ollama.service.
+# O refino (modelo + prompt) fica na task irmã ollama.yml.
+- name: "Ollama | check binary present"
+  ansible.builtin.stat:
+    path: /usr/local/bin/ollama
+  register: ollama_bin
+  changed_when: false
+
+- name: "Ollama | install via official script"
+  ansible.builtin.shell:
+    cmd: "curl -fsSL https://ollama.com/install.sh | sh"
+    creates: /usr/local/bin/ollama
+  become: true
+  when: not ollama_bin.stat.exists
+
+- name: "Ollama | enable + start service"
+  ansible.builtin.systemd:
+    name: ollama.service
+    enabled: true
+    state: started
+    daemon_reload: true
+  become: true
+  when: ansible_facts['service_mgr'] == "systemd"

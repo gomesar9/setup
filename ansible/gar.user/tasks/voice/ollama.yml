@@ -1,6 +1,7 @@
 ---
-# Refino contextual via Ollama (spec §7.4). NÃO instala o Ollama — o usuário já
-# o gerencia. Garante o modelo de refino e o template de prompt editável.
+# Refino contextual via Ollama (spec §7.4). A instalação do Ollama + serviço systemd
+# fica na task irmã ollama-install.yml. Aqui só garantimos o modelo de refino e o
+# template de prompt editável.
 - name: "Ollama | check service reachable"
   ansible.builtin.uri:
     url: "{{ ollama_url }}/api/tags"
