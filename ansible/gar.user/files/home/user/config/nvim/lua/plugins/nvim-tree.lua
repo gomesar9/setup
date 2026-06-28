@@ -1,5 +1,6 @@
 return {
 	"nvim-tree/nvim-tree.lua",
+	version = "v1.17.0",
 	dependencies = {
 		"kyazdani42/nvim-web-devicons",
 	},
@@ -29,5 +30,5 @@ return {
 		Keymap("n", "<leader>ec", "<cmd>NvimTreeCollapse<CR>")
 		Keymap("n", "<leader>er", "<cmd>NvimTreeRefresh<CR>")
 	end,
-	lazy = true,
+	lazy = false,
 }

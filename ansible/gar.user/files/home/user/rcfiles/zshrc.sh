@@ -4,7 +4,6 @@
 # Path to your oh-my-zsh installation.
 #source <(kind completion zsh)
 export ZSH="${HOME}/.oh-my-zsh"
-source "${HOME}/.gomesrc"
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
@@ -161,3 +160,4 @@ export FZF_ALT_C_OPTS="--preview 'tree -L 3 -C {} | head -50'"
 
 # Keybind
 source "${HOME}/.config/zsh/keybind.sh"
+source "${HOME}/.gomesrc"

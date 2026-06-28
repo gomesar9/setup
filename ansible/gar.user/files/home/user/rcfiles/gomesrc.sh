@@ -7,7 +7,7 @@ if command -v eza >/dev/null 2>&1; then
     alias l='ls -la --icons'
     alias çl='clear; ls -lF'
     alias çla='clear; ls -laF'
-    alias t='ls -T -L 3' # Usa o próprio eza para árvore de diretório
+    alias t='eza -T -L 3'
     # Caso tenha sido setado por temas do oh-my-zsh ou outro local
     # Atrapalha nas cores do tema do Eza
     unset LS_COLORS
@@ -46,9 +46,12 @@ alias gfa='git fetch --all'
 alias gc='git commit'
 alias gps='git push'
 alias gpl='git pull'
+if [ -d /oldhome/oldman ]; then
+    alias oldman='sudo su - oldman'
+fi
 
 if command -v zellij >/dev/null 2>&1; then
-    alias zgomes='zellij a gomes 2>/dev/null || zellij --layout gomes --session gomes'
+    alias zgomes='zellij a gomes 2>/dev/null || zellij -n gomes --session gomes'
 fi
 
 ################################################################################

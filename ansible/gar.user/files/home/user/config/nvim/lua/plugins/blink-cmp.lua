@@ -1,16 +1,22 @@
 return {
 	"saghen/blink.cmp",
+	version = "1.*", -- Use version 1.x to avoid v2 requirements
 	lazy = false, -- lazy loading handled internally
 	-- optional: provides snippets for the snippet source
 	dependencies = {
 		"rafamadriz/friendly-snippets",
+		"hrsh7th/nvim-cmp",
 		{ "L3MON4D3/LuaSnip", version = "v2.*" },
 	},
 
 	-- use a release tag to download pre-built binaries
-	version = "v0.9.*",
+	-- version = "v0.9.*",
 
 	opts = {
+		fuzzy = {
+			implementation = "lua",
+		},
+
 		-- 'default' for mappings similar to built-in completion
 		-- 'super-tab' for mappings similar to vscode (tab to accept, arrow keys to navigate)
 		-- 'enter' for mappings similar to 'super-tab' but with 'enter' to accept
@@ -75,11 +81,14 @@ return {
 
 		-- Completion
 		completion = {
+			menu = {
+				auto_show = true,
+			},
 			documentation = {
 				-- Controls whether the documentation window will automatically show when selecting a completion item
 				auto_show = true,
 				-- Delay before showing the documentation window
-				auto_show_delay_ms = 1000,
+				auto_show_delay_ms = 400,
 				-- Delay before updating the documentation window when selecting a new item,
 				-- while an existing item is still visible
 				update_delay_ms = 100,
@@ -87,7 +96,7 @@ return {
 				treesitter_highlighting = true,
 				window = {
 					min_width = 10,
-					max_width = 60,
+					max_width = 80,
 					max_height = 20,
 					border = "padded",
 					winblend = 0,
@@ -104,12 +113,12 @@ return {
 				},
 			},
 			list = {
-				selection = "auto_insert",
+				-- selection = "auto_insert",
 				-- Breakchange da versao 0.10.0
-				-- selection = {
-				-- 	preselect = false,
-				-- 	auto_insert = true,
-				-- },
+				selection = {
+					preselect = false,
+					auto_insert = true,
+				},
 			},
 		},
 	},
