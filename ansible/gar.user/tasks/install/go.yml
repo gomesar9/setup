@@ -37,7 +37,7 @@
         suffix: .golang
       register: tmp_dir
 
-    - name: "Download Go {{ desired_vesion }}"
+    - name: "Download Go {{ go_desired_version }}"
       ansible.builtin.get_url:
         url: "https://go.dev/dl/go{{ go_desired_version }}.linux-amd64.tar.gz"
         dest: "{{ tmp_dir.path }}/golang.tar.gz"
