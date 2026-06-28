@@ -17,7 +17,7 @@ else
     alias t='tree -L 3'
 fi
 alias çgit='cd /git'
-alias çtmp='cd /home/gomes/code/tmp/'
+alias çtmp='cd ~/code/tmp/'
 
 # Kubernetes
 alias k='kubectl'
@@ -63,10 +63,10 @@ export PROJECT_HOME=$HOME/Devel
 export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3
 
 # Path
-export PATH="$PATH:/home/gomes/.cargo/bin:/usr/local/go/bin"
+export PATH="$PATH:$HOME/.cargo/bin:/usr/local/go/bin"
 export PATH="${PATH}:/usr/share/logstash/bin"
 export PATH="${PATH}:/opt/flutter/bin"
-export PATH="${PATH}:/home/gomes/.local/bin"
+export PATH="${PATH}:${HOME}/.local/bin"
 export PATH="${PATH}:/opt/go/bin"
 
 # Go
