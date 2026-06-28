@@ -27,4 +27,18 @@
       changed_when: false
       when: current_default_version.stdout != default_node_version
 
-    # - name: "Install global packages with npm ({{ default_node_version }})"
+    - name: "Set desired global npm packages"
+      ansible.builtin.set_fact:
+        npm_global_packages: "{{ npm_global_packages | default(['tree-sitter-cli']) }}"
+
+    - name: "Install global npm packages ({{ default_node_version }})"
+      ansible.builtin.shell:
+        cmd: |
+          source {{ ansible_facts['env'].HOME }}/.nvm/nvm.sh &&
+          nvm use default >/dev/null 2>&1 &&
+          npm ls -g --depth=0 "{{ item }}" >/dev/null 2>&1 || npm install -g "{{ item }}"
+      args:
+        executable: /bin/bash
+      loop: "{{ npm_global_packages }}"
+      register: npm_global_install
+      changed_when: "'added' in npm_global_install.stdout"
