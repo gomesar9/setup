@@ -3,15 +3,23 @@
 # custom-list (não sobrescreve outros slots). O caller garante dbus+cinnamon.
 # Vars esperadas: ckb_slot, ckb_name, ckb_command, ckb_binding (string GVariant, ex. "['Print']").
 - name: "Cinnamon kb | set fields ({{ ckb_slot }})"
-  ansible.builtin.command:
-    cmd: "dconf write /org/cinnamon/desktop/keybindings/custom-keybindings/{{ ckb_slot }}/{{ item.k }} \"{{ item.v }}\""
-  loop:
-    - { k: "name", v: "'{{ ckb_name }}'" }
-    - { k: "command", v: "'{{ ckb_command }}'" }
-    - { k: "binding", v: "{{ ckb_binding }}" }
-  loop_control:
-    label: "{{ item.k }}"
-  changed_when: true
+  ansible.builtin.shell: |
+    set -eu
+    base=/org/cinnamon/desktop/keybindings/custom-keybindings/{{ ckb_slot }}
+    changed=0
+    write_if_diff() {
+      cur=$(dconf read "$1" 2>/dev/null || true)
+      if [ "$cur" != "$2" ]; then
+        dconf write "$1" "$2"
+        changed=1
+      fi
+    }
+    write_if_diff "$base/name" "'{{ ckb_name }}'"
+    write_if_diff "$base/command" "'{{ ckb_command }}'"
+    write_if_diff "$base/binding" "{{ ckb_binding }}"
+    [ "$changed" = "1" ] && echo CHANGED || true
+  register: ckb_fields
+  changed_when: "'CHANGED' in ckb_fields.stdout"
 
 - name: "Cinnamon kb | merge {{ ckb_slot }} into custom-list"
   ansible.builtin.shell: |
