@@ -29,7 +29,7 @@
 
     - name: "Set desired global npm packages"
       ansible.builtin.set_fact:
-        npm_global_packages: "{{ npm_global_packages | default(['tree-sitter-cli']) }}"
+        npm_global_packages: "{{ npm_global_packages | default([]) }}"
 
     - name: "Install global npm packages ({{ default_node_version }})"
       ansible.builtin.shell:

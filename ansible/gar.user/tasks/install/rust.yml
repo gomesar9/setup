@@ -1,0 +1,31 @@
+# tree-sitter-cli >= 0.26 embute o rquickjs (JS engine) que usa bindgen → precisa de
+# libclang p/ compilar. O `cc`/linker vem do build-essential (install/apt/default.yml).
+- name: "Ensure cargo build deps (libclang p/ tree-sitter-cli)"
+  ansible.builtin.apt:
+    name:
+      - clang
+      - libclang-dev
+    state: present
+  become: true
+
+- name: "Install Rust toolchain (rustup)"
+  ansible.builtin.shell: >
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs |
+    sh -s -- -y --no-modify-path --profile minimal
+  args:
+    creates: "{{ ansible_facts['env'].HOME }}/.cargo/bin/cargo"
+
+- name: "Set desired global cargo crates"
+  ansible.builtin.set_fact:
+    cargo_global_packages: "{{ cargo_global_packages | default(['tree-sitter-cli']) }}"
+
+# cargo install é idempotente: se a versão mais recente já está instalada, imprime
+# "Ignored package `X` is already installed" no stderr e sai 0 sem recompilar.
+- name: "Install global cargo crates"
+  ansible.builtin.shell:
+    cmd: ~/.cargo/bin/cargo install "{{ item }}"
+  args:
+    executable: /bin/bash
+  loop: "{{ cargo_global_packages }}"
+  register: cargo_install
+  changed_when: "'Installing' in cargo_install.stderr"

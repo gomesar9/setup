@@ -154,6 +154,13 @@
 - name: Install Golang
   include_tasks: install/go.yml
 
+- name: Install Rust
+  ansible.builtin.include_tasks:
+    file: install/rust.yml
+    apply:
+      tags: [rust, install]
+  tags: [rust, install]
+
 - name: Install Discord
   include_tasks: install/discord.yml
 
