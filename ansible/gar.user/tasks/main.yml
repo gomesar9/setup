@@ -167,6 +167,13 @@
 - name: Install Lens
   include_tasks: install/lens.yml
 
+- name: Install ZSA keyboard flashing support (Keymapp/Oryx)
+  ansible.builtin.include_tasks:
+    file: install/zsa-keyboard.yml
+    apply:
+      tags: [zsa, keyboard, install]
+  tags: [zsa, keyboard, install]
+
 - name: Install Nerd Fonts
   include_tasks: install/nerdfonts.yml
 

@@ -1,0 +1,53 @@
+# Suporte a flash de teclados ZSA (Voyager/Moonlander) via Keymapp/Oryx.
+# Libs de runtime do app + regra udev oficial da ZSA + membership plugdev.
+# Rode isolado: ansync --tags zsa
+- name: "Install ZSA/Keymapp flashing dependencies"
+  ansible.builtin.apt:
+    name:
+      - libwebkit2gtk-4.1-0
+      - libgtk-3-0
+      - libusb-1.0-0
+    state: present
+    update_cache: true
+  become: true
+
+- name: "Ensure plugdev group exists"
+  ansible.builtin.group:
+    name: plugdev
+    state: present
+  become: true
+
+- name: "Add applying user to plugdev group"
+  ansible.builtin.user:
+    name: "{{ ansible_facts['user_id'] }}"
+    groups: plugdev
+    append: true
+  become: true
+
+- name: "Write ZSA udev rules"
+  ansible.builtin.copy:
+    dest: /etc/udev/rules.d/50-zsa.rules
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      # Rules for Oryx web flashing and live training
+      KERNEL=="hidraw*", ATTRS{idVendor}=="16c0", MODE="0664", GROUP="plugdev"
+      KERNEL=="hidraw*", ATTRS{idVendor}=="3297", MODE="0664", GROUP="plugdev"
+
+      # Legacy rules for live training over webusb (Not needed for firmware v21+)
+        # Rule for all ZSA keyboards
+        SUBSYSTEM=="usb", ATTR{idVendor}=="3297", GROUP="plugdev"
+
+      # Keymapp Flashing rules for the Voyager
+      SUBSYSTEMS=="usb", ATTRS{idVendor}=="3297", MODE:="0666", SYMLINK+="ignition_dfu", GROUP="plugdev"
+      SUBSYSTEMS=="usb", ATTRS{idVendor}=="3297", MODE="0666", GROUP="plugdev"
+  become: true
+  register: zsa_udev_rules
+
+- name: "Reload udev rules (best-effort)"
+  ansible.builtin.shell: udevadm control --reload-rules && udevadm trigger
+  become: true
+  when: zsa_udev_rules.changed
+  changed_when: false
+  failed_when: false   # container/sem udevd rodando pode falhar; no host real aplica
