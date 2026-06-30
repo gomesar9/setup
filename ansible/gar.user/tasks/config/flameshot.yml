@@ -1,0 +1,80 @@
+---
+# Atalhos de screenshot do Cinnamon p/ Flameshot (já instalado via apt).
+# Print → captura e salva em arquivo; <Shift>Print → copia p/ clipboard.
+# Reaproveita config/cinnamon-keybinding.yml (merge no custom-list).
+# Container-safe: pulado sem Cinnamon/DBus.
+- name: "Flameshot | detect dbus session"
+  ansible.builtin.stat:
+    path: "{{ ansible_facts['env']['XDG_RUNTIME_DIR'] | default('/run/user/' + (ansible_facts['user_uid'] | string)) }}/bus"
+  register: fs_dbus
+  changed_when: false
+
+- name: "Flameshot | check cinnamon + dconf present"
+  ansible.builtin.shell: "command -v cinnamon && command -v dconf"
+  register: fs_tools
+  failed_when: false
+  changed_when: false
+
+- name: "Flameshot | ensure screenshots dir"
+  ansible.builtin.file:
+    path: "{{ flameshot_save_dir }}"
+    state: directory
+    owner: "{{ ansible_facts['user_id'] }}"
+    group: "{{ ansible_facts['user_id'] }}"
+    mode: "700"
+
+- name: "Flameshot | configure Cinnamon shortcuts"
+  when: fs_dbus.stat.exists and fs_tools.rc == 0
+  block:
+    - name: "Flameshot | free Print and <Shift>Print from media-keys"
+      ansible.builtin.shell: |
+        set -eu
+        base=/org/cinnamon/desktop/keybindings/media-keys
+        changed=0
+        for key in $(dconf list $base/); do
+          case "$key" in */) continue;; esac   # pula subdirs
+          path="$base/$key"
+          cur=$(dconf read "$path" 2>/dev/null || true)
+          [ -n "$cur" ] || continue
+          new=$(python3 - "$cur" <<'PY'
+        import sys, ast
+        cur = (sys.argv[1] or "").strip()
+        try:
+            lst = ast.literal_eval(cur)
+            if not isinstance(lst, list):
+                raise ValueError
+        except Exception:
+            print(cur); sys.exit(0)      # não é array → não mexe
+        drop = {"Print", "<Shift>Print"}
+        new = [b for b in lst if b not in drop]
+        print(cur if new == lst else (("[" + ", ".join("'%s'" % b for b in new) + "]") if new else "@as []"))
+        PY
+        )
+          if [ "$new" != "$cur" ]; then
+            dconf write "$path" "$new"
+            changed=1
+          fi
+        done
+        [ "$changed" = "1" ] && echo CHANGED || true
+      register: fs_free
+      changed_when: "'CHANGED' in fs_free.stdout"
+
+    - name: "Flameshot | register shortcuts"
+      ansible.builtin.include_tasks:
+        file: config/cinnamon-keybinding.yml
+      vars:
+        ckb_slot: "{{ fs_item.slot }}"
+        ckb_name: "{{ fs_item.name }}"
+        ckb_command: "{{ fs_item.cmd }}"
+        ckb_binding: "{{ fs_item.binding }}"
+      loop:
+        - { slot: "custom-flameshot-file", name: "Flameshot to file",      cmd: "flameshot gui -p {{ flameshot_save_dir }}", binding: "['Print']" }
+        - { slot: "custom-flameshot-clip", name: "Flameshot to clipboard", cmd: "flameshot gui -c",                          binding: "['<Shift>Print']" }
+      loop_control:
+        loop_var: fs_item
+        label: "{{ fs_item.slot }}"
+
+- name: "Flameshot | manual note when skipped"
+  ansible.builtin.debug:
+    msg: "Cinnamon/DBus ausente — configure atalhos manualmente: Print→'flameshot gui -p {{ flameshot_save_dir }}', <Shift>Print→'flameshot gui -c'."
+  when: not (fs_dbus.stat.exists and fs_tools.rc == 0)

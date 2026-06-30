@@ -1,0 +1,40 @@
+---
+# Reutilizável: registra um custom keybinding do Cinnamon e faz MERGE no
+# custom-list (não sobrescreve outros slots). O caller garante dbus+cinnamon.
+# Vars esperadas: ckb_slot, ckb_name, ckb_command, ckb_binding (string GVariant, ex. "['Print']").
+- name: "Cinnamon kb | set fields ({{ ckb_slot }})"
+  ansible.builtin.command:
+    cmd: "dconf write /org/cinnamon/desktop/keybindings/custom-keybindings/{{ ckb_slot }}/{{ item.k }} \"{{ item.v }}\""
+  loop:
+    - { k: "name", v: "'{{ ckb_name }}'" }
+    - { k: "command", v: "'{{ ckb_command }}'" }
+    - { k: "binding", v: "{{ ckb_binding }}" }
+  loop_control:
+    label: "{{ item.k }}"
+  changed_when: true
+
+- name: "Cinnamon kb | merge {{ ckb_slot }} into custom-list"
+  ansible.builtin.shell: |
+    set -eu
+    cur=$(dconf read /org/cinnamon/desktop/keybindings/custom-list 2>/dev/null || true)
+    new=$(SLOT="{{ ckb_slot }}" python3 - "$cur" <<'PY'
+    import os, sys, ast
+    cur = (sys.argv[1] or "").strip()
+    try:
+        lst = ast.literal_eval(cur) if cur and cur != "@as []" else []
+        if not isinstance(lst, list):
+            lst = []
+    except Exception:
+        lst = []
+    slot = os.environ["SLOT"]
+    if slot not in lst:
+        lst.append(slot)
+    print("[" + ", ".join("'%s'" % s for s in lst) + "]")
+    PY
+    )
+    if [ "$cur" != "$new" ]; then
+      dconf write /org/cinnamon/desktop/keybindings/custom-list "$new"
+      echo CHANGED
+    fi
+  register: ckb_list
+  changed_when: "'CHANGED' in ckb_list.stdout"

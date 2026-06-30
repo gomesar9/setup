@@ -16,24 +16,13 @@
 
 - name: "Hotkey | configure Cinnamon custom keybinding"
   when: hk_dbus.stat.exists and hk_tools.rc == 0
+  ansible.builtin.include_tasks:
+    file: config/cinnamon-keybinding.yml
   vars:
-    base: "/org/cinnamon/desktop/keybindings/custom-keybindings/custom-voice"
-  block:
-    - name: "Hotkey | set keybinding fields"
-      ansible.builtin.command:
-        cmd: "dconf write {{ base }}/{{ item.k }} \"{{ item.v }}\""
-      loop:
-        - { k: "name", v: "'Voice dictation toggle'" }
-        - { k: "command", v: "'{{ ansible_facts['env']['HOME'] }}/.local/bin/voice-toggle'" }
-        - { k: "binding", v: "['{{ voice_hotkey }}']" }
-      loop_control:
-        label: "{{ item.k }}"
-      changed_when: true
-
-    - name: "Hotkey | register slot in custom-list"
-      ansible.builtin.command:
-        cmd: "dconf write /org/cinnamon/desktop/keybindings/custom-list \"['custom-voice']\""
-      changed_when: true
+    ckb_slot: "custom-voice"
+    ckb_name: "Voice dictation toggle"
+    ckb_command: "{{ ansible_facts['env']['HOME'] }}/.local/bin/voice-toggle"
+    ckb_binding: "['{{ voice_hotkey }}']"
 
 - name: "Hotkey | manual note when skipped"
   ansible.builtin.debug:

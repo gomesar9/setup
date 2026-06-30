@@ -168,6 +168,15 @@
   include_tasks: voice/main.yml
   tags: [voice, ollama-install]
 
+- name: Config Flameshot screenshot shortcuts (Cinnamon)
+  ansible.builtin.include_tasks:
+    file: config/flameshot.yml
+    apply:
+      tags: [flameshot, config]
+  vars:
+    flameshot_save_dir: "{{ ansible_facts['env'].HOME }}/Pictures/Screenshots"
+  tags: [flameshot, config]
+
 - name: User config
   user:
     name: "{{ ansible_facts['user_id'] }}"
