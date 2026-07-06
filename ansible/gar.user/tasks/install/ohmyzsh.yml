@@ -1,0 +1,14 @@
+- name: "Install/Update oh-my-zsh"
+  block:
+    - name: "Clone or update oh-my-zsh repository"
+      ansible.builtin.git:
+        repo: "https://github.com/ohmyzsh/ohmyzsh.git"
+        dest: "{{ ansible_facts['env'].HOME }}/.oh-my-zsh"
+        version: master
+        update: true
+        depth: 1
+      register: omz_git
+
+    - name: "Report oh-my-zsh state"
+      ansible.builtin.debug:
+        msg: "oh-my-zsh @ {{ omz_git.after | default('unchanged') }}"

@@ -32,6 +32,7 @@
           # - fzf                     # Pesquisa fuzzy para terminal # Muito desatualizado, alterado para ./from-gh
           - git # Controle de versão
           - gnupg # GPG para segurança
+          - guake # Terminal drop-down (Quake-like)
           - htop # Monitoramento do sistema
           - httpie # Cliente HTTP amigável para terminal
           - jq # Manipulação de JSON
@@ -49,6 +50,9 @@
           # - zellij                  # Multiplexador de terminal moderno. Indiponível em alguns apt, movido para ./from-gh
           - zip # Compactação de arquivos
           - zsh # Shell alternativo ao bash
+          - libqt6dbus6 # Synergy dependency
+          - libqt6core6t64 # Synergy dependency
+          - libei1 # Synergy dependency
         state: present
         update_cache: true
       become: true

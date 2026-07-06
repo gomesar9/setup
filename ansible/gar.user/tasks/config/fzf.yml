@@ -1,6 +1,6 @@
 - name: "Config FZF"
   block:
-    - name: "Ensure support dirs [{{ gh_tool_name }}]"
+    - name: "Ensure support dirs [FZF]"
       ansible.builtin.file:
         path: "{{ ansible_facts['env'].HOME }}/.config/zsh/autocomplete"
         state: directory
