@@ -1,0 +1,131 @@
+- name: "Nerd Fonts"
+  block:
+    - name: "Set Nerd Fonts defaults"
+      ansible.builtin.set_fact:
+        nerdfonts_fonts: "{{ nerdfonts_fonts | default(['JetBrainsMono', 'FiraCode', 'Hack', 'Meslo']) }}"
+        nerdfonts_install_dir: "{{ nerdfonts_install_dir | default('/usr/share/fonts/nerd-fonts') }}"
+
+    - name: "Ensure fontconfig and unzip packages"
+      ansible.builtin.apt:
+        name:
+          - fontconfig
+          - unzip
+        state: present
+      become: true
+
+    - name: "Check Nerd Fonts latest version"
+      ansible.builtin.shell: |
+        set -o pipefail && curl -s -D- https://github.com/ryanoasis/nerd-fonts/releases/latest |
+        grep -oP 'location:.*/tag/\K(v?\d+\.\d+\.\d+)'
+      args:
+        executable: /bin/bash
+      register: nerdfonts_latest
+      changed_when: false
+
+    - name: "Set desired Nerd Fonts version"
+      ansible.builtin.set_fact:
+        nerdfonts_desired_version: "{{ nerdfonts_desired_version | default(nerdfonts_latest.stdout | trim) }}"
+
+    - name: "Check per-font version marker"
+      ansible.builtin.stat:
+        path: "{{ nerdfonts_install_dir }}/{{ item }}/.installed-{{ nerdfonts_desired_version }}"
+      loop: "{{ nerdfonts_fonts }}"
+      loop_control:
+        label: "{{ item }}"
+      register: nerdfonts_markers
+
+    - name: "Compute fonts that need update"
+      ansible.builtin.set_fact:
+        nerdfonts_to_install: >-
+          {{
+            nerdfonts_markers.results
+            | rejectattr('stat.exists')
+            | map(attribute='item')
+            | list
+          }}
+
+    - name: "Display Nerd Fonts plan"
+      ansible.builtin.debug:
+        msg: "Desired: {{ nerdfonts_desired_version }}. To install/update: {{ nerdfonts_to_install | default([]) }}"
+
+- name: "Install Nerd Fonts"
+  when: nerdfonts_to_install | length > 0
+  block:
+    - name: "Create Nerd Fonts temporary directory"
+      ansible.builtin.tempfile:
+        state: directory
+        suffix: .nerdfonts
+      register: tmp_dir
+
+    - name: "Ensure base install directory"
+      ansible.builtin.file:
+        path: "{{ nerdfonts_install_dir }}"
+        state: directory
+        mode: "0755"
+      become: true
+
+    - name: "Download Nerd Fonts zips"
+      ansible.builtin.get_url:
+        url: "https://github.com/ryanoasis/nerd-fonts/releases/download/{{ nerdfonts_desired_version }}/{{ item }}.zip"
+        dest: "{{ tmp_dir.path }}/{{ item }}.zip"
+        mode: "0644"
+      loop: "{{ nerdfonts_to_install }}"
+      loop_control:
+        label: "{{ item }}.zip"
+
+    - name: "Reset font directories"
+      ansible.builtin.file:
+        path: "{{ nerdfonts_install_dir }}/{{ item }}"
+        state: absent
+      loop: "{{ nerdfonts_to_install }}"
+      loop_control:
+        label: "{{ item }}"
+      become: true
+
+    - name: "Recreate font directories"
+      ansible.builtin.file:
+        path: "{{ nerdfonts_install_dir }}/{{ item }}"
+        state: directory
+        mode: "0755"
+      loop: "{{ nerdfonts_to_install }}"
+      loop_control:
+        label: "{{ item }}"
+      become: true
+
+    - name: "Extract Nerd Fonts zips"
+      ansible.builtin.unarchive:
+        src: "{{ tmp_dir.path }}/{{ item }}.zip"
+        dest: "{{ nerdfonts_install_dir }}/{{ item }}"
+        remote_src: true
+        creates: "{{ nerdfonts_install_dir }}/{{ item }}/.installed-{{ nerdfonts_desired_version }}"
+      loop: "{{ nerdfonts_to_install }}"
+      loop_control:
+        label: "{{ item }}"
+      become: true
+
+    - name: "Write per-font version marker"
+      ansible.builtin.file:
+        path: "{{ nerdfonts_install_dir }}/{{ item }}/.installed-{{ nerdfonts_desired_version }}"
+        state: touch
+        mode: "0644"
+      loop: "{{ nerdfonts_to_install }}"
+      loop_control:
+        label: "{{ item }}"
+      become: true
+      changed_when: false
+
+    - name: "Refresh font cache"
+      ansible.builtin.command: "fc-cache -f {{ nerdfonts_install_dir }}"
+      become: true
+      changed_when: false
+
+- name: "Clear Nerd Fonts files"
+  block:
+    - name: "Ensure absent Nerd Fonts temporary dir"
+      ansible.builtin.file:
+        path: "{{ tmp_dir.path }}"
+        state: absent
+      become: true
+      when:
+        - tmp_dir is defined
+        - tmp_dir is not skipped

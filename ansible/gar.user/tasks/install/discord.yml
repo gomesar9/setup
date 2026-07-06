@@ -1,5 +1,4 @@
 - name: "Check Discord"
-  tags: discord
   block:
     - name: "Set discord_script_path"
       ansible.builtin.set_fact:

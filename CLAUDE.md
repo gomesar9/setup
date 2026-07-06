@@ -78,16 +78,7 @@ ansible/gar.user/
 
 Ditado local p/ Claude Code (spec: `plans/voice-dev-stack-spec.md`). Entrada: mic → Silero VAD → whisper.cpp (`pt`) → refino Ollama → `xdotool`. Saída: hook Stop → Piper TTS. Vars em `vars/voice.yml`; rode isolado com `ansync --tags voice`. Portabilidade CPU→GPU por variável (`voice_device`, `whisper_model`, `torch_version`).
 
-**Convenção de tags:** `include_tasks` **não** propaga as tags da diretiva às tasks incluídas. Para que `--tags X` execute o conteúdo de um include, use `apply:` — não basta `tags:` no include:
-
-```yaml
-- name: "..."
-  ansible.builtin.include_tasks:
-    file: voice/deps.yml
-    apply:
-      tags: [voice, install]
-  tags: [voice, install]
-```
+**Tags:** a stack de voz é *self-contained* — rode com `--tags voice`. Ela **não** entra no `--tags install` global (é pesada). A convenção de tags do projeto está em [Convenção de tags](#convenção-de-tags).
 
 ### Instalador genérico do GitHub (`install_release.yml`)
 
@@ -127,6 +118,32 @@ A lógica: consulta a versão mais recente via redirect do GitHub → compara co
 
 - Em Ubuntu 24.04+ o pacote `libasound2` foi renomeado para `libasound2t64` (mudança do "Ano 2038"). Se o Discord falhar, alterar em `tasks/install/discord.yml`.
 - Os pacotes Qt6 `t64` em `install/apt/default.yml` (Synergy deps) só existem no Ubuntu 24.04+ — impedem o build da imagem de teste Debian 12 (ver Gotcha 2 acima).
+
+## Convenção de tags
+
+Aplica-se ao role `gar.user` (o `srv1` ainda não segue). Toda task selecionável recebe tags em **3 eixos**:
+
+1. **Componente** (obrigatório, 1): nome canônico do tool/config em **kebab-case minúsculo** (nome do binário/produto). Uma tag de componente cobre **tudo daquele tool** — instalação **e** cópia do dotfile — então `--tags nvim` instala o binário **e** aplica a config. Ex: `nvim`, `eza`, `fzf`, `fd`, `go`, `rust`, `pyenv`, `nvm`, `luarocks`, `kubectl`, `terraform`, `ohmyzsh`, `discord`, `lens`, `telegram`, `zsa`, `nerdfonts`, `flameshot`, `voice`, `zsh`, `bash`, `git`, `guake`, `autostart`, `apt`.
+2. **Ação** (obrigatório, 1+): `install` (baixar/compilar/instalar) · `config` (tweak pós-install: tema, keybinding) · `userconfig` (copiar dotfiles/rcfiles/templates p/ `$HOME`).
+3. **Grupo** (opcional, só onde vale rodar a família junta): `langs` (`go`, `rust`, `pyenv`, `nvm`, `luarocks`) · `iac` (`terraform`, `kubectl`).
+
+### Regras
+- **Tags vivem no ponto de include (`apply:` + diretiva), NÃO dentro do arquivo de task.** `include_tasks` não propaga a tag da diretiva às tasks incluídas — sem `apply:`, `--tags X` roda o include mas pula as tasks internas (ou só o 1º bloco taggeado). O par cobre todos os blocos do arquivo de uma vez:
+  ```yaml
+  - name: Install Golang
+    ansible.builtin.include_tasks:
+      file: install/go.yml
+      apply:
+        tags: [go, install, langs]
+    tags: [go, install, langs]
+  ```
+- **Lista sempre** (`tags: [x]`), nunca escalar (`tags: x`).
+- **1 componente = 1 nome**, sem sinônimos nem tags compostas ação+componente (não usar `keyboard` além de `zsa`, nem `ollama-install`).
+- **`userconfig` × componente:** a cópia de cada dotfile é uma task própria com `[<componente>, userconfig]` (o loop monolítico foi quebrado por isso). Assim instalar o componente também instala sua config.
+- **`voice`** é self-contained: `apply: [voice]` no include de topo; cada sub-include de `voice/main.yml` declara suas próprias tags de ação/subcomponente (`whisper`, `model`, `vocab`, `ollama`, `daemon`, `tts`, `hook`, `hotkey`). Não entra no `--tags install` global.
+
+### Verificar
+`ansible-playbook ... --list-tags` (universo de tags) e `... --tags <comp> --list-tasks` (o que roda). Sempre no container (nunca no host).
 
 ## graphify
 

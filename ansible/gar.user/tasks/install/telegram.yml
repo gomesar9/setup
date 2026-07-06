@@ -1,0 +1,146 @@
+# Install do Telegram Desktop (tarball oficial — sem flatpak/snap).
+# Molde: install/go.yml (tarball -> /opt dono user -> symlink -> cleanup).
+# Marker de versão (.installed-version): padrão de install/nerdfonts.yml — o binário do
+# Telegram não tem --version headless confiável.
+#
+# /opt/Telegram fica DONO DO USUÁRIO (igual /opt/go) de propósito: o Updater interno
+# precisa de permissão de escrita pra se auto-atualizar.
+# Tradeoff: se o Updater avançar além do marker, um re-run reinstala a mesma latest do site
+# (redundante, mas self-healing — o marker volta a bater). Decisão: manter auto-update on.
+- name: "Check Telegram Desktop"
+  block:
+    - name: "Check Telegram latest version (redirect oficial)"
+      ansible.builtin.shell: |
+        set -o pipefail &&
+        curl -sIL https://telegram.org/dl/desktop/linux |
+        grep -oiP 'tsetup\.\K[0-9]+\.[0-9]+\.[0-9]+(?=\.tar\.xz)' | head -1
+      args:
+        executable: /bin/bash
+      register: telegram_latest
+      changed_when: false
+
+    - name: "Set telegram_desired_version"
+      ansible.builtin.set_fact:
+        telegram_desired_version: "{{ telegram_latest.stdout | trim }}"
+      when: telegram_desired_version is not defined
+
+    - name: "Get local Telegram version (marker)"
+      ansible.builtin.shell: |
+        cat /opt/Telegram/.installed-version 2>/dev/null || echo ''
+      args:
+        executable: /bin/bash
+      register: local_version
+      changed_when: false
+
+    - name: Display versions
+      ansible.builtin.debug:
+        msg: "Desired Telegram version: {{ telegram_desired_version }}. Local version found: {{ local_version.stdout | default('None') }}"
+
+- name: "Install Telegram Desktop"
+  when: local_version.stdout != telegram_desired_version
+  block:
+    - name: "Install Telegram dependencies"
+      ansible.builtin.apt:
+        name: xz-utils
+        state: present
+        update_cache: true
+      become: true
+
+    - name: Create Telegram temporary directory
+      ansible.builtin.tempfile:
+        state: directory
+        suffix: .telegram
+      register: tmp_dir
+
+    - name: "Download Telegram Desktop {{ telegram_desired_version }}"
+      ansible.builtin.get_url:
+        url: "https://td.telegram.org/tlinux/tsetup.{{ telegram_desired_version }}.tar.xz"
+        dest: "{{ tmp_dir.path }}/telegram.tar.xz"
+        validate_certs: true
+        mode: "0644"
+
+    - name: "Extract Telegram archive"
+      ansible.builtin.unarchive:
+        src: "{{ tmp_dir.path }}/telegram.tar.xz"
+        dest: "{{ tmp_dir.path }}"
+        remote_src: true
+
+    - name: "Remove existing Telegram directory"
+      ansible.builtin.file:
+        path: /opt/Telegram
+        state: absent
+      become: true
+
+    - name: "Copy extracted Telegram directory to /opt"
+      ansible.builtin.copy:
+        src: "{{ tmp_dir.path }}/Telegram/"
+        dest: /opt/Telegram
+        remote_src: true
+        mode: "0755"
+        owner: "{{ ansible_facts['user_id'] }}"
+        group: "{{ ansible_facts['user_id'] }}"
+      become: true
+
+    - name: "Ensure Telegram symbolic link"
+      ansible.builtin.file:
+        src: /opt/Telegram/Telegram
+        dest: /usr/local/bin/telegram-desktop
+        state: link
+        force: true
+      become: true
+
+    - name: "Write Telegram version marker"
+      ansible.builtin.copy:
+        content: "{{ telegram_desired_version }}"
+        dest: /opt/Telegram/.installed-version
+        mode: "0644"
+        owner: "{{ ansible_facts['user_id'] }}"
+        group: "{{ ansible_facts['user_id'] }}"
+      become: true
+
+- name: "Telegram launcher and icon"
+  when: local_version.stdout != telegram_desired_version
+  block:
+    - name: "Ensure icon and applications directories exist"
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ ansible_facts['env'].HOME }}/.local/share/icons/hicolor/256x256/apps"
+        - "{{ ansible_facts['env'].HOME }}/.local/share/applications"
+
+    - name: "Download Telegram icon"
+      ansible.builtin.get_url:
+        url: "https://raw.githubusercontent.com/telegramdesktop/tdesktop/dev/Telegram/Resources/art/icon256.png"
+        dest: "{{ ansible_facts['env'].HOME }}/.local/share/icons/hicolor/256x256/apps/telegram.png"
+        validate_certs: true
+        mode: "0644"
+
+    - name: "Create Telegram .desktop launcher"
+      ansible.builtin.copy:
+        dest: "{{ ansible_facts['env'].HOME }}/.local/share/applications/telegramdesktop.desktop"
+        mode: "0644"
+        content: |
+          [Desktop Entry]
+          Version=1.0
+          Name=Telegram Desktop
+          Comment=Official desktop version of Telegram messaging app
+          TryExec=telegram-desktop
+          Exec=telegram-desktop -- %u
+          Icon=telegram
+          Terminal=false
+          StartupWMClass=TelegramDesktop
+          Type=Application
+          Categories=Chat;Network;InstantMessaging;Qt;
+          MimeType=x-scheme-handler/tg;
+          Keywords=tg;chat;im;messaging;messenger;sms;tdesktop;
+
+- name: Clear Telegram temporary files
+  block:
+    - name: "Ensure absent Telegram temporary dir"
+      ansible.builtin.file:
+        path: "{{ tmp_dir.path }}"
+        state: absent
+      become: true
+      when: tmp_dir is not skipped

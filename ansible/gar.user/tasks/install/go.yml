@@ -1,5 +1,4 @@
 - name: "Check Go"
-  tags: go
   block:
     - name: "Get local Go version"
       ansible.builtin.shell: |

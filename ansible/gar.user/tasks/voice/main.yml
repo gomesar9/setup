@@ -54,8 +54,8 @@
   ansible.builtin.include_tasks:
     file: ollama-install.yml
     apply:
-      tags: [voice, ollama, install, ollama-install]
-  tags: [voice, ollama, install, ollama-install]
+      tags: [voice, ollama, install]
+  tags: [voice, ollama, install]
 
 - name: "Voice | Ollama refinement model + prompt"
   ansible.builtin.include_tasks:
@@ -68,8 +68,8 @@
   ansible.builtin.include_tasks:
     file: daemon.yml
     apply:
-      tags: [voice, venv, daemon]
-  tags: [voice, venv, daemon]
+      tags: [voice, daemon]
+  tags: [voice, daemon]
 
 - name: "Voice | Piper TTS"
   ansible.builtin.include_tasks:

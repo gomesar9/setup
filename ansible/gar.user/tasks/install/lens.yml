@@ -2,7 +2,6 @@
 # Criar task para garantir keyring e apt.sources
 # Criar task para intalar via apt os demais programas, dependentes de keyring
 - name: "Check Lens"
-  tags: lens
   block:
     - name: "Ensure keyrings directory exists with correct permissions"
       ansible.builtin.file:

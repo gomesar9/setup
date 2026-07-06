@@ -1,5 +1,10 @@
 ---
-- name: Create default directory structure
+# Convenção de tags: ver CLAUDE.md ("Convenção de tags").
+# 3 eixos por task: componente (nome do tool) + ação (install/config/userconfig)
+# + grupo opcional (langs/iac). include_tasks leva SEMPRE o par `apply:` + diretiva.
+
+# --- Estrutura base de diretórios ---
+- name: Create user base directories
   ansible.builtin.file:
     path: "{{ ansible_facts['env'].HOME }}/{{ item }}"
     state: directory
@@ -7,11 +12,41 @@
     group: "{{ ansible_facts['user_id'] }}"
     mode: "700"
   loop:
-    - .cache/nvim/undodir
     - .local/
     - code
+  tags: [userconfig]
 
-- name: Copy dotfiles
+- name: Create nvim cache directory
+  ansible.builtin.file:
+    path: "{{ ansible_facts['env'].HOME }}/.cache/nvim/undodir"
+    state: directory
+    owner: "{{ ansible_facts['user_id'] }}"
+    group: "{{ ansible_facts['user_id'] }}"
+    mode: "700"
+  tags: [nvim, userconfig]
+
+# --- Dotfiles (copiados por componente para que a tag do tool arraste sua config) ---
+- name: Copy nvim dotfiles
+  ansible.builtin.copy:
+    src: home/user/config/nvim
+    dest: "{{ ansible_facts['env'].HOME }}/.config"
+    owner: "{{ ansible_facts['user_id'] }}"
+    group: "{{ ansible_facts['user_id'] }}"
+    mode: "600"
+    directory_mode: "700"
+  tags: [nvim, userconfig]
+
+- name: Copy eza dotfiles
+  ansible.builtin.copy:
+    src: home/user/config/eza
+    dest: "{{ ansible_facts['env'].HOME }}/.config"
+    owner: "{{ ansible_facts['user_id'] }}"
+    group: "{{ ansible_facts['user_id'] }}"
+    mode: "600"
+    directory_mode: "700"
+  tags: [eza, userconfig]
+
+- name: Copy zsh dotfiles
   ansible.builtin.copy:
     src: "home/user/{{ item['src'] }}"
     dest: "{{ ansible_facts['env'].HOME }}/{{ item['dest'] }}"
@@ -20,18 +55,80 @@
     mode: "600"
     directory_mode: "700"
   loop:
-    - { src: config/autostart, dest: .config }
-    - { src: config/bash, dest: .config }
-    - { src: config/fontconfig, dest: .config }
-    - { src: config/git, dest: .config }
-    - { src: config/guake/wallpapers, dest: .config/guake }
-    - { src: config/npm, dest: .config }
-    - { src: config/nvim, dest: .config }
-    - { src: config/eza, dest: .config }
-    - { src: config/python, dest: .config }
     - { src: config/zsh, dest: .config }
     - { src: rcfiles/gomesrc.sh, dest: .gomesrc }
     - { src: rcfiles/zshrc.sh, dest: .zshrc }
+  tags: [zsh, userconfig]
+
+- name: Copy bash dotfiles
+  ansible.builtin.copy:
+    src: home/user/config/bash
+    dest: "{{ ansible_facts['env'].HOME }}/.config"
+    owner: "{{ ansible_facts['user_id'] }}"
+    group: "{{ ansible_facts['user_id'] }}"
+    mode: "600"
+    directory_mode: "700"
+  tags: [bash, userconfig]
+
+- name: Copy git dotfiles
+  ansible.builtin.copy:
+    src: home/user/config/git
+    dest: "{{ ansible_facts['env'].HOME }}/.config"
+    owner: "{{ ansible_facts['user_id'] }}"
+    group: "{{ ansible_facts['user_id'] }}"
+    mode: "600"
+    directory_mode: "700"
+  tags: [git, userconfig]
+
+- name: Copy npm dotfiles
+  ansible.builtin.copy:
+    src: home/user/config/npm
+    dest: "{{ ansible_facts['env'].HOME }}/.config"
+    owner: "{{ ansible_facts['user_id'] }}"
+    group: "{{ ansible_facts['user_id'] }}"
+    mode: "600"
+    directory_mode: "700"
+  tags: [nvm, userconfig]
+
+- name: Copy python dotfiles
+  ansible.builtin.copy:
+    src: home/user/config/python
+    dest: "{{ ansible_facts['env'].HOME }}/.config"
+    owner: "{{ ansible_facts['user_id'] }}"
+    group: "{{ ansible_facts['user_id'] }}"
+    mode: "600"
+    directory_mode: "700"
+  tags: [pyenv, userconfig]
+
+- name: Copy fontconfig dotfiles
+  ansible.builtin.copy:
+    src: home/user/config/fontconfig
+    dest: "{{ ansible_facts['env'].HOME }}/.config"
+    owner: "{{ ansible_facts['user_id'] }}"
+    group: "{{ ansible_facts['user_id'] }}"
+    mode: "600"
+    directory_mode: "700"
+  tags: [nerdfonts, userconfig]
+
+- name: Copy autostart dotfiles
+  ansible.builtin.copy:
+    src: home/user/config/autostart
+    dest: "{{ ansible_facts['env'].HOME }}/.config"
+    owner: "{{ ansible_facts['user_id'] }}"
+    group: "{{ ansible_facts['user_id'] }}"
+    mode: "600"
+    directory_mode: "700"
+  tags: [autostart, userconfig]
+
+- name: Copy guake wallpapers
+  ansible.builtin.copy:
+    src: home/user/config/guake/wallpapers
+    dest: "{{ ansible_facts['env'].HOME }}/.config/guake"
+    owner: "{{ ansible_facts['user_id'] }}"
+    group: "{{ ansible_facts['user_id'] }}"
+    mode: "600"
+    directory_mode: "700"
+  tags: [guake, userconfig]
 
 - name: Copy scripts
   ansible.builtin.copy:
@@ -41,6 +138,7 @@
     group: "{{ ansible_facts['user_id'] }}"
     mode: "700"
     directory_mode: "700"
+  tags: [userconfig]
 
 - name: Render guake.conf
   ansible.builtin.template:
@@ -49,14 +147,22 @@
     owner: "{{ ansible_facts['user_id'] }}"
     group: "{{ ansible_facts['user_id'] }}"
     mode: "600"
+  tags: [guake, userconfig]
 
 # Instalação de ferramentas padrão
 - name: Include basic system tools
-  include_tasks: install/apt/default.yml
+  ansible.builtin.include_tasks:
+    file: install/apt/default.yml
+    apply:
+      tags: [apt, install]
+  tags: [apt, install]
 
 # Instalação do essencial: Neovim
 - name: Include Neovim install
-  include_tasks: install/from-gh/install_release.yml
+  ansible.builtin.include_tasks:
+    file: install/from-gh/install_release.yml
+    apply:
+      tags: [nvim, install]
   vars:
     gh_tool_name: Neovim
     # gh_tool_desired_version: v0.10.4
@@ -75,10 +181,14 @@
       - { src: "nvim-linux-x86_64/share/man/", dest: "/usr/share/man/" }
       - { src: "nvim-linux-x86_64/share/nvim/", dest: "/usr/local/share/nvim/" }
       - { src: "nvim-linux-x86_64/lib/nvim/", dest: "/usr/local/lib/" }
+  tags: [nvim, install]
 
 # Instalação de outras ferramentas via Github
 - name: Include Eza install
-  include_tasks: install/from-gh/install_release.yml
+  ansible.builtin.include_tasks:
+    file: install/from-gh/install_release.yml
+    apply:
+      tags: [eza, install]
   vars:
     gh_tool_name: Eza
     gh_tool_repo: https://github.com/eza-community/eza
@@ -87,14 +197,22 @@
     gh_tool_download_file_name: eza_x86_64-unknown-linux-gnu.tar.gz
     gh_tool_extracted_rel_file_path: eza
     # gh_tool_symlink_path: /usr/bin/ls
+  tags: [eza, install]
 
 - name: Config Eza
-  include_tasks: config/eza.yml
+  ansible.builtin.include_tasks:
+    file: config/eza.yml
+    apply:
+      tags: [eza, config]
   vars:
     eza_theme: rose-pine
+  tags: [eza, config]
 
 - name: Install Fuzzy Finder
-  include_tasks: install/from-gh/install_release.yml
+  ansible.builtin.include_tasks:
+    file: install/from-gh/install_release.yml
+    apply:
+      tags: [fzf, install]
   vars:
     gh_tool_name: Fuzzy Finder
     gh_tool_repo: https://github.com/junegunn/fzf
@@ -104,12 +222,20 @@
     gh_tool_url_version: v${VERSION}
     gh_tool_download_file_name: fzf-${VERSION}-linux_amd64.tar.gz
     gh_tool_extracted_rel_file_path: fzf
+  tags: [fzf, install]
 
 - name: Config FZF
-  include_tasks: config/fzf.yml
+  ansible.builtin.include_tasks:
+    file: config/fzf.yml
+    apply:
+      tags: [fzf, config]
+  tags: [fzf, config]
 
 - name: Install FdFind
-  include_tasks: install/from-gh/install_release.yml
+  ansible.builtin.include_tasks:
+    file: install/from-gh/install_release.yml
+    apply:
+      tags: [fd, install]
   vars:
     gh_tool_name: FdFind
     gh_tool_repo: https://github.com/sharkdp/fd
@@ -119,68 +245,126 @@
     gh_tool_extracted_rel_file_path: fd
     gh_tool_unarchive_options:
       - "--strip-components=1"
+  tags: [fd, install]
 
 # Instalações únicas
 - name: Install kubectl
-  include_tasks: install/kubectl.yml
+  ansible.builtin.include_tasks:
+    file: install/kubectl.yml
+    apply:
+      tags: [kubectl, install, iac]
+  tags: [kubectl, install, iac]
 
 - name: Install Terraform
-  include_tasks:
+  ansible.builtin.include_tasks:
     file: install/terraform.yml
     apply:
-      tags: [iac, install]
-  tags: [iac, install]
+      tags: [terraform, install, iac]
+  tags: [terraform, install, iac]
 
 - name: Install Luarocks
-  include_tasks: install/luarocks.yml
+  ansible.builtin.include_tasks:
+    file: install/luarocks.yml
+    apply:
+      tags: [luarocks, install, langs]
   vars:
     luarocks_stable_version: "3.11.1"
+  tags: [luarocks, install, langs]
 
 - name: Install Pyenv
-  include_tasks: install/pyenv.yml
+  ansible.builtin.include_tasks:
+    file: install/pyenv.yml
+    apply:
+      tags: [pyenv, install, langs]
+  tags: [pyenv, install, langs]
 
 - name: Config Pyenv
-  include_tasks: config/pyenv.yml
+  ansible.builtin.include_tasks:
+    file: config/pyenv.yml
+    apply:
+      tags: [pyenv, config, langs]
+  tags: [pyenv, config, langs]
 
 - name: Install NVM
-  include_tasks: install/nvm.yml
+  ansible.builtin.include_tasks:
+    file: install/nvm.yml
+    apply:
+      tags: [nvm, install, langs]
+  tags: [nvm, install, langs]
 
 - name: Config NVM
-  include_tasks: config/nvm.yml
+  ansible.builtin.include_tasks:
+    file: config/nvm.yml
+    apply:
+      tags: [nvm, config, langs]
+  tags: [nvm, config, langs]
 
 - name: Install oh-my-zsh
-  include_tasks: install/ohmyzsh.yml
+  ansible.builtin.include_tasks:
+    file: install/ohmyzsh.yml
+    apply:
+      tags: [ohmyzsh, install]
+  tags: [ohmyzsh, install]
 
 - name: Install Golang
-  include_tasks: install/go.yml
+  ansible.builtin.include_tasks:
+    file: install/go.yml
+    apply:
+      tags: [go, install, langs]
+  tags: [go, install, langs]
 
 - name: Install Rust
   ansible.builtin.include_tasks:
     file: install/rust.yml
     apply:
-      tags: [rust, install]
-  tags: [rust, install]
+      tags: [rust, install, langs]
+  tags: [rust, install, langs]
 
 - name: Install Discord
-  include_tasks: install/discord.yml
+  ansible.builtin.include_tasks:
+    file: install/discord.yml
+    apply:
+      tags: [discord, install]
+  tags: [discord, install]
 
 - name: Install Lens
-  include_tasks: install/lens.yml
+  ansible.builtin.include_tasks:
+    file: install/lens.yml
+    apply:
+      tags: [lens, install]
+  tags: [lens, install]
+
+- name: Install Telegram Desktop
+  ansible.builtin.include_tasks:
+    file: install/telegram.yml
+    apply:
+      tags: [telegram, install]
+  tags: [telegram, install]
 
 - name: Install ZSA keyboard flashing support (Keymapp/Oryx)
   ansible.builtin.include_tasks:
     file: install/zsa-keyboard.yml
     apply:
-      tags: [zsa, keyboard, install]
-  tags: [zsa, keyboard, install]
+      tags: [zsa, install]
+  tags: [zsa, install]
 
 - name: Install Nerd Fonts
-  include_tasks: install/nerdfonts.yml
+  ansible.builtin.include_tasks:
+    file: install/nerdfonts.yml
+    apply:
+      tags: [nerdfonts, install]
+  tags: [nerdfonts, install]
 
 # Stack de ditado por voz local (spec: plans/voice-dev-stack-spec.md)
+# Self-contained: rode via `--tags voice`. Não entra no `--tags install` global
+# (stack pesada). O `apply:` propaga `voice` a todas as sub-tasks; cada sub-include
+# de voice/main.yml declara suas próprias tags de ação/subcomponente.
 - name: Voice-to-code dictation stack
-  include_tasks: voice/main.yml
-  tags: [voice, ollama-install]
+  ansible.builtin.include_tasks:
+    file: voice/main.yml
+    apply:
+      tags: [voice]
+  tags: [voice]
 
 - name: Config Flameshot screenshot shortcuts (Cinnamon)
   ansible.builtin.include_tasks:
@@ -196,3 +380,4 @@
     name: "{{ ansible_facts['user_id'] }}"
     shell: /bin/zsh
   become: true
+  tags: [zsh, userconfig]
