@@ -157,6 +157,14 @@
       tags: [apt, install]
   tags: [apt, install]
 
+# bat vem do apt como 'batcat' (Debian/Ubuntu) — symlink devolve o comando 'bat'
+- name: Config bat
+  ansible.builtin.include_tasks:
+    file: config/bat.yml
+    apply:
+      tags: [bat, config]
+  tags: [bat, config]
+
 # Instalação do essencial: Neovim
 - name: Include Neovim install
   ansible.builtin.include_tasks:

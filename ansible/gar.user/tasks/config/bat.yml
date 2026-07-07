@@ -1,0 +1,15 @@
+- name: "Config bat"
+  block:
+    - name: "Ensure ~/.local/bin exists [bat]"
+      ansible.builtin.file:
+        path: "{{ ansible_facts['env'].HOME }}/.local/bin"
+        state: directory
+        mode: "0755"
+
+    # No Debian/Ubuntu o pacote apt 'bat' instala o binário como 'batcat'
+    # (conflito com 'bacula-console-qt'). Symlink devolve o comando 'bat'.
+    - name: "Symlink bat -> batcat"
+      ansible.builtin.file:
+        src: /usr/bin/batcat
+        dest: "{{ ansible_facts['env'].HOME }}/.local/bin/bat"
+        state: link
