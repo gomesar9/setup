@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Guake Terminal (systemd)
+Comment=Import graphical env into the user manager, then start guake.service
+# Exec spec (freedesktop): arg do -c entre aspas (contém espaços); usar && e não ';';
+# um '%' literal precisaria virar '%%'.
+Exec=/bin/sh -c "systemctl --user import-environment DISPLAY XAUTHORITY DBUS_SESSION_BUS_ADDRESS && systemctl --user start guake.service"
+Terminal=false
+Icon=guake
+NoDisplay=true
+X-GNOME-Autostart-enabled=true

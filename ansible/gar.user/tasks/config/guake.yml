@@ -1,0 +1,72 @@
+---
+# guake "inicia após o login": unit systemd --user (guake.service, sem [Install])
+# disparada por ~/.config/autostart/guake-service.desktop na fase Application do
+# cinnamon-session, quando o X já subiu. Container-safe: dconf e systemd são
+# pulados quando não há bus de usuário.
+- name: "Guake | ensure systemd user dir"
+  ansible.builtin.file:
+    path: "{{ ansible_facts['env'].HOME }}/.config/systemd/user"
+    state: directory
+    owner: "{{ ansible_facts['user_id'] }}"
+    group: "{{ ansible_facts['user_id'] }}"
+    mode: "0755"
+
+- name: "Guake | ensure autostart dir"
+  ansible.builtin.file:
+    path: "{{ ansible_facts['env'].HOME }}/.config/autostart"
+    state: directory
+    owner: "{{ ansible_facts['user_id'] }}"
+    group: "{{ ansible_facts['user_id'] }}"
+    mode: "0700"
+
+- name: "Guake | install systemd --user unit"
+  ansible.builtin.copy:
+    src: home/user/.config/systemd/user/guake.service
+    dest: "{{ ansible_facts['env'].HOME }}/.config/systemd/user/guake.service"
+    owner: "{{ ansible_facts['user_id'] }}"
+    group: "{{ ansible_facts['user_id'] }}"
+    mode: "0644"
+  register: guake_unit
+
+- name: "Guake | install autostart trigger (post-login)"
+  ansible.builtin.copy:
+    src: home/user/config/autostart/guake-service.desktop
+    dest: "{{ ansible_facts['env'].HOME }}/.config/autostart/guake-service.desktop"
+    owner: "{{ ansible_facts['user_id'] }}"
+    group: "{{ ansible_facts['user_id'] }}"
+    mode: "0600"
+
+# O guake reescreve/apaga este path a cada start conforme start-at-login.
+- name: "Guake | remove legacy autostart entry"
+  ansible.builtin.file:
+    path: "{{ ansible_facts['env'].HOME }}/.config/autostart/guake.desktop"
+    state: absent
+
+- name: "Guake | detect user dbus"
+  ansible.builtin.stat:
+    path: "{{ ansible_facts['env']['XDG_RUNTIME_DIR'] | default('/run/user/' + (ansible_facts['user_uid'] | string)) }}/bus"
+  register: guake_dbus
+  changed_when: false
+
+# Com start-at-login=false o guake apaga o autostart dele: um único start path.
+- name: "Guake | disable guake's own start-at-login"
+  when: guake_dbus.stat.exists
+  ansible.builtin.shell: |
+    set -eu
+    command -v dconf >/dev/null 2>&1 || exit 0
+    cur=$(dconf read /org/guake/general/start-at-login 2>/dev/null || true)
+    if [ "$cur" != "false" ]; then
+      dconf write /org/guake/general/start-at-login false
+      echo CHANGED
+    fi
+  register: guake_sal
+  changed_when: "'CHANGED' in guake_sal.stdout"
+
+# Sem `enabled:` — a unit não tem [Install], `systemctl enable` falharia.
+- name: "Guake | daemon-reload + start service"
+  when: guake_dbus.stat.exists
+  ansible.builtin.systemd:
+    name: guake.service
+    scope: user
+    daemon_reload: true
+    state: "{{ 'restarted' if guake_unit is changed else 'started' }}"

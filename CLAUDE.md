@@ -62,6 +62,7 @@ ansible/gar.user/
       discord.yml / lens.yml / ...  # Outros instaladores pontuais
     config/
       eza.yml / fzf.yml / nvm.yml / pyenv.yml  # Tasks de configuração pós-install
+      guake.yml                     # Unit systemd --user + gatilho de autostart
       apt.yml                       # Garante apt-transport-https
     voice/                          # Stack de ditado por voz local (main.yml orquestra)
       deps.yml / whisper-cpp.yml / model.yml / vocab.yml / ollama.yml /
@@ -118,12 +119,15 @@ A lógica: consulta a versão mais recente via redirect do GitHub → compara co
 
 - Em Ubuntu 24.04+ o pacote `libasound2` foi renomeado para `libasound2t64` (mudança do "Ano 2038"). Se o Discord falhar, alterar em `tasks/install/discord.yml`.
 - Os pacotes Qt6 `t64` em `install/apt/default.yml` (Synergy deps) só existem no Ubuntu 24.04+ — impedem o build da imagem de teste Debian 12 (ver Gotcha 2 acima).
+- **O Cinnamon não ativa `graphical-session.target`** (`cinnamon-session-binary` não tem uma única referência a ele; só usa systemd p/ logind e `SetEnvironment`). Unit `--user` com `WantedBy=graphical-session.target` nunca sobe. Serviços gráficos precisam de gatilho por `~/.config/autostart/*.desktop`, que roda na fase Application, com o X já de pé — ver `tasks/config/guake.yml`. O `voice-dictation.service` ainda sofre desse bug.
+- **O guake é dono de `~/.config/autostart/guake.desktop`**: `refresh_user_start()` reescreve (ou apaga) esse path a cada start, conforme o dconf `/org/guake/general/start-at-login`. Por isso o gatilho do repo usa outro nome (`guake-service.desktop`) e a task desliga `start-at-login`.
+- **`Render guake.conf` é inerte**: o guake persiste preferências em dconf (`/org/guake/`); `~/.config/guake/guake.conf` só é lido por `guake --restore-preferences <arq>`, que nada no repo invoca.
 
 ## Convenção de tags
 
 Aplica-se ao role `gar.user` (o `srv1` ainda não segue). Toda task selecionável recebe tags em **3 eixos**:
 
-1. **Componente** (obrigatório, 1): nome canônico do tool/config em **kebab-case minúsculo** (nome do binário/produto). Uma tag de componente cobre **tudo daquele tool** — instalação **e** cópia do dotfile — então `--tags nvim` instala o binário **e** aplica a config. Ex: `nvim`, `eza`, `fzf`, `fd`, `go`, `rust`, `pyenv`, `nvm`, `luarocks`, `kubectl`, `terraform`, `ohmyzsh`, `discord`, `lens`, `telegram`, `zsa`, `nerdfonts`, `flameshot`, `voice`, `zsh`, `bash`, `git`, `guake`, `autostart`, `apt`.
+1. **Componente** (obrigatório, 1): nome canônico do tool/config em **kebab-case minúsculo** (nome do binário/produto). Uma tag de componente cobre **tudo daquele tool** — instalação **e** cópia do dotfile — então `--tags nvim` instala o binário **e** aplica a config. Ex: `nvim`, `eza`, `fzf`, `fd`, `go`, `rust`, `pyenv`, `nvm`, `luarocks`, `kubectl`, `terraform`, `ohmyzsh`, `discord`, `lens`, `telegram`, `zsa`, `nerdfonts`, `flameshot`, `voice`, `zsh`, `bash`, `git`, `guake`, `apt`.
 2. **Ação** (obrigatório, 1+): `install` (baixar/compilar/instalar) · `config` (tweak pós-install: tema, keybinding) · `userconfig` (copiar dotfiles/rcfiles/templates p/ `$HOME`).
 3. **Grupo** (opcional, só onde vale rodar a família junta): `langs` (`go`, `rust`, `pyenv`, `nvm`, `luarocks`) · `iac` (`terraform`, `kubectl`).
 

@@ -110,16 +110,6 @@
     directory_mode: "700"
   tags: [nerdfonts, userconfig]
 
-- name: Copy autostart dotfiles
-  ansible.builtin.copy:
-    src: home/user/config/autostart
-    dest: "{{ ansible_facts['env'].HOME }}/.config"
-    owner: "{{ ansible_facts['user_id'] }}"
-    group: "{{ ansible_facts['user_id'] }}"
-    mode: "600"
-    directory_mode: "700"
-  tags: [autostart, userconfig]
-
 - name: Copy guake wallpapers
   ansible.builtin.copy:
     src: home/user/config/guake/wallpapers
@@ -148,6 +138,13 @@
     group: "{{ ansible_facts['user_id'] }}"
     mode: "600"
   tags: [guake, userconfig]
+
+- name: Guake autostart service (post-login)
+  ansible.builtin.include_tasks:
+    file: config/guake.yml
+    apply:
+      tags: [guake, config, userconfig]
+  tags: [guake, config, userconfig]
 
 # Instalação de ferramentas padrão
 - name: Include basic system tools

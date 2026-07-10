@@ -1,0 +1,12 @@
+[Unit]
+Description=Guake drop-down terminal (Quake-style)
+# Sem [Install]: a unit não é enabled. Quem dispara é o autostart
+# guake-service.desktop, na fase Application do cinnamon-session (X já de pé).
+# graphical-session.target não serve: o Cinnamon não o ativa.
+ConditionEnvironment=DISPLAY
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/guake
+Restart=on-failure
+RestartSec=3
